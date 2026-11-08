@@ -1,0 +1,268 @@
+{
+  "info": {
+    "name": "Q01 · ArrayList vs LinkedList",
+    "description": "Colección de Postman para el punto 1 del examen.\n\nEl context-path de la aplicación es /api/q1, así que todas las URLs cuelgan de él.\n\nOrden de uso: ejecuta primero «01 · Crear lista». Su script de respuesta guarda el `id` en la variable de entorno `listId`, y el resto de peticiones la usan ya montada.\n\nVariables: `baseUrl` (http://localhost:8080/api/q1), `listId` y `type`.",
+    "_postman_id": "b8f3c1a2-7d64-4e19-9c05-q1a1b2c3d4e5",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/q1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Suite de verificación (52 comprobaciones)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/verify",
+        "description": "Ejecuta la batería completa de comprobaciones del contrato de List contra las dos implementaciones y devuelve el informe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const informe = pm.response.json();",
+              "console.log(`Comprobaciones: ${informe.total} | superadas: ${informe.passed} | fallidas: ${informe.failed}`);",
+              "pm.test('todas las comprobaciones se superan', function () {",
+              "    pm.expect(informe.failed).to.eql(0);",
+              "    pm.expect(informe.passed).to.eql(informe.total);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 · Crear lista",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/arraylist",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"values\": [1, \"a\", null]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Crea una MyArrayList con contenido inicial. El script guarda el id en la variable de entorno listId."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('se crea con 201', function () { pm.response.to.have.status(201); });",
+              "const creada = pm.response.json();",
+              "pm.environment.set('listId', creada.id);",
+              "pm.environment.set('type', creada.type);",
+              "console.log('listId = ' + creada.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Ver la lista",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}"
+      }
+    },
+    {
+      "name": "03 · Añadir elemento al final",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/elements",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": \"nuevo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Añade al final. El body debe ser un objeto JSON con la clave \"value\"."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('se añade con 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('el tamaño crece en 1', function () {",
+              "    pm.expect(pm.response.json().size).to.eql(2);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Añadir elemento en una posición",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/elements/0",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": \"primero\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Inserta en la posición 0 y desplaza el resto. Los índices empiezan en cero."
+      }
+    },
+    {
+      "name": "05 · Reemplazar elemento",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/elements/1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": \"cambiado\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "06 · Leer un elemento",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/elements/1"
+      }
+    },
+    {
+      "name": "07 · Borrar por posición",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/elements/0"
+      }
+    },
+    {
+      "name": "08 · Buscar (index-of)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/index-of",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": \"a\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Es POST y no GET porque el valor viaja en el body JSON: así el tipo lo decide Jackson y la comparación es exacta. Mandar 1 (número) no es lo mismo que \"1\" (cadena)."
+      }
+    },
+    {
+      "name": "09 · Comprobar (contains)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}/contains",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": \"a\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10 · Listar todas las listas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/lists"
+      }
+    },
+    {
+      "name": "11 · Listar filtrado por tipo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/lists?type=array_list",
+        "description": "El filtro acepta arraylist, array-list, array_list, linkedlist, linked-list… sin distinguir mayúsculas. Un valor vacío no filtra; uno inválido da 400."
+      }
+    },
+    {
+      "name": "12 · Borrar la lista",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/lists/{{type}}/{{listId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('se borra con 204', function () { pm.response.to.have.status(204); });",
+              "pm.environment.unset('listId');"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

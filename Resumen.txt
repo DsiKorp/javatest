@@ -1,0 +1,7 @@
+1. ArrayList vs LinkedList:
+public interface List<E> extends SequencedCollection<E>
+public interface MyList<E> extends List<E>
+public abstract class AbstractMyList<E> implements MyList<E>
+public class MyArrayList<E> extends AbstractMyList<E> implements RandomAccess
+public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E>
+final class MySubList<E> extends AbstractMyList<E>
