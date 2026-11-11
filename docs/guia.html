@@ -1,0 +1,805 @@
+<title>Guía de la prueba técnica Java</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Plano técnico de ingeniería: neutrals fríos con sesgo azul, un azul de señal para
+   "estructura", verde para "permitido/pasa", ámbar para "prohibido/desviación". */
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --surface-2: #eef1f7;
+  --fg: #151922;
+  --muted: #59616f;
+  --line: #dbe0ea;
+  --line-strong: #b9c2d4;
+  --accent: #1b4fd8;
+  --accent-soft: #e6ecfd;
+  --accent-line: #b9c9f7;
+  --ok: #0d6f47;
+  --ok-soft: #e0f3ea;
+  --warn: #9c3d0c;
+  --warn-soft: #fceee5;
+  --code-bg: #10151e;
+  --code-fg: #dbe3f0;
+  --code-key: #8fb8ff;
+  --code-str: #9ad9a8;
+  --code-com: #7b879b;
+  --radius: 10px;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1017;
+    --surface: #151b25;
+    --surface-2: #1c2430;
+    --fg: #e7ebf2;
+    --muted: #97a1b3;
+    --line: #26303d;
+    --line-strong: #3a4757;
+    --accent: #85a9ff;
+    --accent-soft: #172441;
+    --accent-line: #2c4272;
+    --ok: #57d09c;
+    --ok-soft: #10281e;
+    --warn: #ff9d6b;
+    --warn-soft: #2b1a11;
+    --code-bg: #0a0e15;
+    --code-fg: #d7dfec;
+    --code-key: #85a9ff;
+    --code-str: #9ad9a8;
+    --code-com: #7b879b;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0c1017;
+  --surface: #151b25;
+  --surface-2: #1c2430;
+  --fg: #e7ebf2;
+  --muted: #97a1b3;
+  --line: #26303d;
+  --line-strong: #3a4757;
+  --accent: #85a9ff;
+  --accent-soft: #172441;
+  --accent-line: #2c4272;
+  --ok: #57d09c;
+  --ok-soft: #10281e;
+  --warn: #ff9d6b;
+  --warn-soft: #2b1a11;
+  --code-bg: #0a0e15;
+  --code-fg: #d7dfec;
+  --code-key: #85a9ff;
+  --code-str: #9ad9a8;
+  --code-com: #7b879b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+
+.wrap { max-width: 1180px; margin: 0 auto; }
+
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.1; margin: 0 0 .4em; }
+h2 { font-size: clamp(1.35rem, 3.2vw, 1.75rem); line-height: 1.2; margin: 0 0 .5em; }
+h3 { font-size: 1.08rem; margin: 2.2em 0 .5em; }
+p { margin: 0 0 1em; max-width: 68ch; }
+a { color: var(--accent); }
+ul.tight { margin: .4rem 0 0; padding-left: 1.2rem; }
+ul.tight li { margin-bottom: .35rem; font-size: .95rem; }
+
+/* ---------- cabecera ---------- */
+header.hero { padding: 3.5rem 0 2rem; border-bottom: 1px solid var(--line); margin-bottom: 2.5rem; }
+.eyebrow {
+  font-family: var(--mono); font-size: .74rem; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--accent); margin: 0 0 1rem;
+}
+.lede { font-size: 1.1rem; color: var(--muted); max-width: 60ch; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.75rem; font-family: var(--mono); font-size: .78rem; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface);
+  border-radius: 999px; padding: .3rem .75rem; color: var(--muted); white-space: nowrap;
+}
+.chip.ok { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 3rem; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+nav.toc { position: sticky; top: 0; padding-bottom: 2rem; }
+@media (max-width: 900px) {
+  nav.toc {
+    position: static; margin: 0 -16px 2.5rem; padding: 1rem 16px;
+    border-bottom: 1px solid var(--line); overflow-x: auto; white-space: nowrap;
+  }
+  nav.toc ol { display: flex; gap: 1.25rem; padding-left: 1.1rem; }
+  nav.toc .toc-sub { display: none; }
+}
+nav.toc h2 {
+  font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--muted); margin-bottom: .9rem;
+}
+nav.toc ol { list-style: none; padding-left: 1.1rem; margin: 0; }
+nav.toc li { margin-bottom: .5rem; font-size: .92rem; }
+nav.toc a { color: var(--fg); text-decoration: none; border-bottom: 1px solid transparent; }
+nav.toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+nav.toc ol > li { color: var(--muted); font-size: .78rem; margin-bottom: 1.1rem; }
+nav.toc ol > li > a { color: var(--muted); font-weight: 600; }
+.toc-num { font-family: var(--mono); color: var(--accent); margin-right: .45rem; font-size: .8rem; }
+
+/* ---------- bloques ---------- */
+section { margin-bottom: 3.5rem; scroll-margin-top: 1rem; }
+.sec-head { border-top: 2px solid var(--fg); padding-top: 1.1rem; margin-bottom: 1.5rem; }
+.sec-num { font-family: var(--mono); font-size: .78rem; color: var(--accent); display: block; margin-bottom: .35rem; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin: 1.5rem 0; }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+
+.callout { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.2rem; margin: 1.5rem 0; }
+.callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.callout.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+.callout p { margin-bottom: .6rem; font-size: .95rem; }
+.callout p:last-child { margin-bottom: 0; }
+.callout .label {
+  font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
+  display: block; margin-bottom: .4rem; color: var(--muted);
+}
+
+/* ---------- código ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-fg);
+  border-radius: var(--radius); padding: 1.1rem 1.2rem; margin: 1rem 0;
+  overflow-x: auto; font-family: var(--mono); font-size: .82rem; line-height: 1.6;
+  border: 1px solid var(--line);
+}
+pre code { font-family: inherit; }
+pre .k { color: var(--code-key); }
+pre .s { color: var(--code-str); }
+pre .c { color: var(--code-com); font-style: italic; }
+code.inline {
+  font-family: var(--mono); font-size: .87em; background: var(--surface-2);
+  padding: .12em .38em; border-radius: 4px; border: 1px solid var(--line);
+}
+.filepath { font-family: var(--mono); font-size: .78rem; color: var(--muted); margin: 1.6rem 0 .2rem; }
+.filepath .ln { color: var(--accent); }
+
+/* ---------- tablas ---------- */
+.tbl-wrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: none; }
+td code, th code { font-family: var(--mono); font-size: .85em; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- jerarquía ---------- */
+.tree { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.6rem 1.4rem; overflow-x: auto; }
+.tree-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; flex-wrap: wrap; }
+.tree-box {
+  border: 1px solid var(--line-strong); background: var(--surface-2);
+  border-radius: 8px; padding: .5rem .85rem; font-family: var(--mono); font-size: .8rem; white-space: nowrap;
+}
+.tree-box.parent { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.tree-box.leaf { border-style: dashed; }
+.tree-box small { display: block; font-size: .68rem; color: var(--muted); font-weight: 400; letter-spacing: .02em; }
+.tree-stem { width: 1px; height: 1.4rem; background: var(--line-strong); margin-left: 1.1rem; }
+.tree-kids { display: flex; flex-wrap: wrap; gap: .6rem; padding-left: 2.3rem; position: relative; }
+.tree-kids::before { content: ""; position: absolute; left: 1.1rem; top: 0; height: 1.2rem; width: 1px; background: var(--line-strong); }
+.tree-kids > .tree-box { position: relative; }
+.tree-kids > .tree-box::before { content: ""; position: absolute; left: -1.2rem; top: 50%; width: 1.2rem; height: 1px; background: var(--line-strong); }
+
+/* ---------- pasos ---------- */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 1.5rem 0; }
+.steps > li {
+  counter-increment: step; position: relative; padding: 0 0 1.5rem 3.2rem;
+  border-left: 1px solid var(--line); margin-left: .85rem;
+}
+.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.steps > li::before {
+  content: counter(step); position: absolute; left: -1.05rem; top: -.15rem;
+  width: 2.1rem; height: 2.1rem; border-radius: 50%;
+  background: var(--accent); color: #fff; display: grid; place-items: center;
+  font-family: var(--mono); font-size: .85rem; font-weight: 500;
+}
+.steps h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+.steps p { margin-bottom: .5rem; font-size: .95rem; color: var(--muted); }
+.steps .tag { font-family: var(--mono); font-size: .74rem; color: var(--accent); }
+
+.q { font-weight: 600; }
+.q-a { color: var(--muted); font-size: .95rem; }
+
+footer { border-top: 1px solid var(--line); margin-top: 4rem; padding: 2rem 0 3rem; color: var(--muted); font-size: .88rem; }
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <p class="eyebrow">Banco de pruebas · Entrevistas Java senior</p>
+  <h1>Guía de la prueba técnica Java</h1>
+  <p class="lede">
+    Cada pregunta del listado de EPAM se resuelve aquí como un módulo autónomo: su propia
+    implementación, sus propios tests, su propio contrato y su propio endpoint de
+    autoverificación. Esta página es el mapa para entenderlos dos módulos que ya están
+    montados y para saber qué va antes de qué.
+  </p>
+  <div class="hero-meta">
+    <span class="chip">Java 25</span>
+    <span class="chip">Spring Boot 4.1.2</span>
+    <span class="chip">Maven</span>
+    <span class="chip ok">103 tests en verde</span>
+    <span class="chip ok">52 + 10 comprobaciones</span>
+    <span class="chip ok">0 avisos de javadoc</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#mapa"><span class="toc-num">01</span>El mapa del proyecto</a></li>
+    <li><a href="#q01"><span class="toc-num">02</span>Punto 1 · ArrayList vs LinkedList</a>
+      <ol class="toc-sub">
+        <li><a href="#q01-idea">La idea</a></li>
+        <li><a href="#q01-orden">Orden de lectura</a></li>
+        <li><a href="#q01-decisiones">Las seis decisiones</a></li>
+      </ol>
+    </li>
+    <li><a href="#q02"><span class="toc-num">03</span>Punto 2 · REST vs SOAP</a>
+      <ol class="toc-sub">
+        <li><a href="#q02-idea">La idea</a></li>
+        <li><a href="#q02-contratos">Los dos contratos</a></li>
+        <li><a href="#q02-stubs">Los dos stubs</a></li>
+        <li><a href="#q02-golpes">Spring WS 5</a></li>
+      </ol>
+    </li>
+    <li><a href="#verificar"><span class="toc-num">04</span>Cómo se verifica</a></li>
+    <li><a href="#patron"><span class="toc-num">05</span>El patrón que sigue cada pregunta</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="mapa">
+  <div class="sec-head">
+    <span class="sec-num">01 — El mapa del proyecto</span>
+    <h2>Un examen, un paquete por pregunta</h2>
+  </div>
+
+  <p>
+    Lo que hace que este repo funcione como banco de pruebas es el <strong>aislamiento</strong>:
+    cada pregunta tiene su paquete, sus URLs y su documentación, y no sabe nada de las demás.
+    Eso permite montar la pregunta 3 sin tocar la 1.
+  </p>
+
+  <div class="tree">
+    <div class="tree-row">
+      <div class="tree-box parent">q01 / arraylistvslinkedlist<small>punto 1 · ArrayList vs LinkedList</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box leaf">collections/<small>MyArrayList · MyLinkedList · sin java.util</small></div>
+      <div class="tree-box leaf">verification/<small>52 comprobaciones del contrato</small></div>
+      <div class="tree-box leaf">web/<small>/api/q1/lists · /api/q1/verify</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-row">
+      <div class="tree-box parent">q02 / restvssoap<small>punto 2 · REST vs SOAP (WSDL y OpenAPI)</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box leaf">domain/<small>PricingService, el negocio compartido</small></div>
+      <div class="tree-box leaf">soap/<small>endpoint Spring WS + WSDL a mano</small></div>
+      <div class="tree-box leaf">contract/<small>OpenAPI a mano + parser de los dos</small></div>
+      <div class="tree-box leaf">client/<small>los dos stubs, estilo generador</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-row">
+      <div class="tree-box parent">common/<small>lo que comparten las dos preguntas</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box leaf">verification/<small>Check · Runner · Report</small></div>
+      <div class="tree-box leaf">dto/<small>ErrorResponse</small></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Pregunta</th><th>Paquete</th><th>Verificación</th><th>Documentación</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">01</td>
+          <td>ArrayList vs LinkedList</td>
+          <td><code>q01.arraylistvslinkedlist</code></td>
+          <td><code>POST /api/q1/verify</code></td>
+          <td><code>docs/q01-arraylist-vs-linkedlist.md</code></td>
+        </tr>
+        <tr>
+          <td class="num">02</td>
+          <td>REST frente a SOAP</td>
+          <td><code>q02.restvssoap</code></td>
+          <td><code>POST /api/q2/verify</code></td>
+          <td><code>docs/q02-rest-vs-soap.md</code></td>
+        </tr>
+        <tr>
+          <td class="num">03</td>
+          <td><em>pendiente</em></td>
+          <td><code>q03.&lt;tema&gt;</code></td>
+          <td><code>POST /api/q3/verify</code></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="label">El context-path</span>
+    <p>
+      Todas las URLs cuelgan de <code class="inline">server.servlet.context-path=/api</code>, y cada
+      pregunta añade su propio espacio dentro: <code class="inline">/api/q1/…</code>,
+      <code class="inline">/api/q2/…</code>. El context-path lo quita el contenedor antes de que la
+      petición llegue al dispatcher, así que los <code class="inline">@RequestMapping</code> de los
+      controladores <strong>no</strong> llevan el prefijo.
+    </p>
+  </div>
+</section>
+
+<section id="q01">
+  <div class="sec-head">
+    <span class="sec-num">02 — Punto 1</span>
+    <h2>ArrayList vs LinkedList, desde cero</h2>
+  </div>
+
+  <h3 id="q01-idea">La idea: dos estructuras, una familia</h3>
+
+  <p>
+    Lo primero que hay que entender es que <strong>no hay dos implementaciones sueltas</strong>.
+    Hay una familia: una clase abstracta con todos los algoritmos de lista escritos <em>una sola
+    vez</em>, y dos subclases que sólo aportan la parte que depende de cómo se guarda el dato.
+  </p>
+
+  <p>
+    Es exactamente el reparto que hace el JDK con <code class="inline">AbstractList</code> →
+    <code class="inline">ArrayList</code> / <code class="inline">LinkedList</code>. Copiar ese
+    diseño no es trampa: es la respuesta correcta a «implementa una lista desde cero», porque
+    demuestra que entiendes por qué el JDK lo tiene así y no sólo que sabes escribir un array.
+  </p>
+
+  <div class="tree">
+    <div class="tree-row">
+      <div class="tree-box parent">MyList&lt;E&gt;<small>interface · extends java.util.List&lt;E&gt;</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box parent">AbstractMyList&lt;E&gt;<small>abstract · 444 líneas · todo el trabajo común</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box leaf">MyArrayList&lt;E&gt;<small>Object[] · RandomAccess</small></div>
+      <div class="tree-box leaf">MyLinkedList&lt;E&gt;<small>Node prev/next · Deque</small></div>
+      <div class="tree-box leaf">MySubList&lt;E&gt;<small>vista que delega en la raíz</small></div>
+    </div>
+  </div>
+
+  <p>
+    <code class="inline">AbstractMyList</code> deja <strong>sólo seis primitivas abstractas</strong>;
+    todo lo demás sale de ellas:
+  </p>
+
+  <pre><code><span class="k">public abstract int</span> size();
+<span class="k">public abstract E</span> get(<span class="k">int</span> index);
+<span class="k">public abstract E</span> set(<span class="k">int</span> index, E element);
+<span class="k">public abstract void</span> add(<span class="k">int</span> index, E element);
+<span class="k">public abstract E</span> remove(<span class="k">int</span> index);
+<span class="k">public abstract</span> ListIterator&lt;E&gt; listIterator(<span class="k">int</span> index);</code></pre>
+
+  <p>
+    Con esas seis se construye <code class="inline">indexOf</code>, <code class="inline">contains</code>,
+    <code class="inline">toArray</code>, <code class="inline">toString</code>,
+    <code class="inline">equals</code>, <code class="inline">hashCode</code>,
+    <code class="inline">addAll</code>, <code class="inline">removeAll</code>,
+    <code class="inline">retainAll</code> y <code class="inline">sort</code>. Dos implementaciones
+    distintas que nunca divergen.
+  </p>
+
+  <div class="callout ok">
+    <span class="label">La regla de oro del paquete</span>
+    <p>
+      Ninguna clase de <code class="inline">q01/…/collections/</code> puede usar
+      <code class="inline">java.util.ArrayList</code>, <code class="inline">LinkedList</code>,
+      <code class="inline">Collections</code>, <code class="inline">Arrays</code> ni
+      <code class="inline">HashMap</code>. Lo que <strong>sí</strong> se permite son las
+      <em>interfaces</em> del JDK (<code class="inline">List</code>,
+      <code class="inline">Iterator</code>, <code class="inline">ListIterator</code>,
+      <code class="inline">Deque</code>, <code class="inline">RandomAccess</code>), las excepciones y
+      un puñado de utilidades de soporte.
+    </p>
+    <p>
+      Implementar las interfaces del JDK está permitido: lo que no lo está es delegar en sus
+      implementaciones. Esa distinción es el centro de la prueba.
+    </p>
+  </div>
+
+  <h3 id="q01-orden">Por dónde empezar a leerlo</h3>
+
+  <p>
+    Si lees los ficheros por orden alfabético empiezas por <code class="inline">AbstractMyList</code>,
+    que es la clase más larga y la que menos se entiende sin contexto. Llévalos en este orden:
+  </p>
+
+  <ol class="steps">
+    <li>
+      <h3>El contrato de <code class="inline">AbstractMyList</code></h3>
+      <span class="tag">collections/AbstractMyList.java</span>
+      <p>Las seis primitivas abstractas. Si entiendes esto, entiendes el 80% del diseño.</p>
+    </li>
+    <li>
+      <h3><code class="inline">MyArrayList</code> completa</h3>
+      <span class="tag">collections/MyArrayList.java</span>
+      <p>La clase más fácil y la que da la intuición de cómo se implementa una lista sobre un array.</p>
+    </li>
+    <li>
+      <h3><code class="inline">MyLinkedList</code>, empezando por <code class="inline">Node</code> y los <code class="inline">link*</code></h3>
+      <span class="tag">collections/MyLinkedList.java</span>
+      <p>Los helpers <code class="inline">linkFirst</code>, <code class="inline">linkLast</code> y
+      <code class="inline">linkAfter</code> son el corazón de la estructura.</p>
+    </li>
+    <li>
+      <h3>Ahora sí, el resto de <code class="inline">AbstractMyList</code></h3>
+      <span class="tag">collections/AbstractMyList.java</span>
+      <p>Los algoritmos comunes. Fíjate en <code class="inline">equals</code>,
+      <code class="inline">hashCode</code> y <code class="inline">sort</code>.</p>
+    </li>
+    <li>
+      <h3><code class="inline">MyListIterator</code>: el iterador fail-fast</h3>
+      <span class="tag">collections/MyListIterator.java</span>
+      <p>122 líneas, muy legible. Es donde se ve el <code class="inline">modCount</code> en acción.</p>
+    </li>
+    <li>
+      <h3><code class="inline">MySubList</code>: la vista</h3>
+      <span class="tag">collections/MySubList.java</span>
+      <p>Corta e ilustrativa: enseña cómo se construye una vista que no copia nada.</p>
+    </li>
+    <li>
+      <h3>Por último, la capa web</h3>
+      <span class="tag">web/ · service/ · verification/</span>
+      <p>Ya la entiendes: es una capa fina sobre las colecciones.</p>
+    </li>
+  </ol>
+
+  <h3 id="q01-decisiones">Las seis decisiones que se preguntan</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Te preguntan</th><th>La respuesta</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>«¿Por qué <code>equals</code> no comprueba el tipo?»</td>
+          <td>Porque en el JDK <code>new ArrayList&lt;&gt;(List.of(1,2)).equals(new LinkedList&lt;&gt;(List.of(1,2)))</code> es <code>true</code>. Comparar contra cualquier <code>List</code> lo replica, y el <code>hashCode</code> 31-based hace que dos listas iguales den el mismo hash aunque sean de implementaciones distintas.</td>
+        </tr>
+        <tr>
+          <td>«¿Por qué no usas <code>Collections.sort</code>?»</td>
+          <td>Porque está prohibido por la regla del paquete. Y el <code>default</code> de <code>List.sort</code> delega en <code>Arrays.sort</code>, que también lo está. Se escribe un merge sort propio, y de paso estable.</td>
+        </tr>
+        <tr>
+          <td>«¿Qué es <code>modCount</code>?»</td>
+          <td>Un contador de modificaciones estructurales. El iterador guarda una foto al crearse y, si al avanzar el contador ha cambiado, lanza <code>ConcurrentModificationException</code>. Es una <em>best effort</em>: avisa de que el resultado sería impredecible.</td>
+        </tr>
+        <tr>
+          <td>«¿Qué pasa si modifico el padre con una vista viva?»</td>
+          <td>La vista queda obsoleta y la siguiente operación lanza <code>ConcurrentModificationException</code>. Igual que en el JDK. Lo que sí funciona es mutar <em>a través</em> de la vista: el cambio se refleja en el padre.</td>
+        </tr>
+        <tr>
+          <td>«¿Por qué <code>reversed()</code> devuelve una copia?»</td>
+          <td>Porque desde Java 21 <code>List</code> y <code>Deque</code> declaran <code>reversed()</code> con tipos de retorno incompatibles, y <code>MyLinkedList</code> implementa las dos. Es una desviación consciente y documentada.</td>
+        </tr>
+        <tr>
+          <td>«¿Por qué <code>ConcurrentHashMap</code> y no una base de datos?»</td>
+          <td>Porque es una herramienta de demostración y entrevista, no un servicio de producción. Lo interesante es poder mutar una lista paso a paso y ver el resultado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout ok">
+    <span class="label">La prueba más fuerte</span>
+    <p>
+      <code class="inline">MyListMatchesJdkTest</code> aplica la misma secuencia de <strong>500
+      operaciones aleatorias</strong> sobre la implementación propia y sobre
+      <code class="inline">java.util.ArrayList</code> / <code class="inline">LinkedList</code>, y
+      después de <em>cada</em> operación compara tamaño, contenido, array, hash e igualdad. Las
+      implementaciones propias no «se parecen» al JDK: <strong>son</strong> el JDK.
+    </p>
+  </div>
+</section>
+
+<section id="q02">
+  <div class="sec-head">
+    <span class="sec-num">03 — Punto 2</span>
+    <h2>REST frente a SOAP: los contratos</h2>
+  </div>
+
+  <h3 id="q02-idea">La idea: el contrato es lo que manda</h3>
+
+  <p>
+    El enunciado de esta pregunta es explícito sobre qué evalúa de verdad: las diferencias
+    teóricas no dicen nada, lo que dice es el <strong>WSDL</strong> y su equivalente en REST, el
+    <strong>OpenAPI</strong>. Documentar una API y generar stubs a partir de su contrato es lo que
+    hay que saber.
+  </p>
+
+  <p>
+    Lo que hace este módulo es poner las dos cosas lado a lado: <strong>la misma operación de
+    negocio</strong> expuesta en REST y en SOAP, con su OpenAPI y su WSDL, y los dos clientes
+    generados a mano con la forma que produce cada generador.
+  </p>
+
+  <pre><code>HTTP  →  web/QuoteRestController   →  service/PricingService  →  {sku, quantity, unitPrice, total}
+HTTP  →  soap/QuoteSoapEndpoint   →  service/PricingService  →  {sku, quantity, unitPrice, total}
+                                   ↑
+                         el negocio no sabe nada de los protocolos</code></pre>
+
+  <h3 id="q02-contratos">Los dos contratos</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th>SOAP</th><th>REST</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Contrato</td>
+          <td>WSDL 1.1 + XML Schema</td>
+          <td>OpenAPI 3.1</td>
+        </tr>
+        <tr>
+          <td>Fichero</td>
+          <td><code>q02/wsdl/quote-service.wsdl</code></td>
+          <td><code>q02/contract/openapi.yaml</code></td>
+        </tr>
+        <tr>
+          <td>Se publica en</td>
+          <td><code>GET /api/q2/soap/quote-service.wsdl</code></td>
+          <td><code>GET /api/q2/openapi.yaml</code> (y <code>.json</code>)</td>
+        </tr>
+        <tr>
+          <td>Genera stubs con</td>
+          <td><code>wsimport</code>, <code>cxf-codegen</code>, <code>jaxws-maven-plugin</code></td>
+          <td><code>openapi-generator</code></td>
+        </tr>
+        <tr>
+          <td>Error</td>
+          <td><code>&lt;SOAP-ENV:Fault&gt;</code> con <code>faultcode: Client</code></td>
+          <td><code>400 Bad Request</code> con el mismo mensaje</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Los dos están <strong>escritos a mano</strong>, y eso es deliberado: el WSDL es lo que tiene un
+    servicio SOAP <em>legacy</em> (el contrato está congelado y el servidor se implementa contra
+    él), y el OpenAPI por simetría. Además, en este entorno <code class="inline">wsdl4j</code> no
+    está disponible, así que Spring WS no puede <em>generar</em> el WSDL desde las anotaciones
+    (sí puede <em>servir</em> uno escrito a mano).
+  </p>
+
+  <div class="callout ok">
+    <span class="label">La comprobación que responde a la pregunta</span>
+    <p>
+      La cuarta de las diez comprobaciones de <code class="inline">/api/q2/verify</code> es
+      <strong>«los dos contratos describen la misma operación»</strong>: se parsean los dos
+      ficheros (el WSDL con el DOM del JDK, el OpenAPI con SnakeYAML), se extraen los campos de la
+      petición y de la respuesta de cada uno, y se comparan. No es una opinión: es algo que se
+      comprueba.
+    </p>
+  </div>
+
+  <h3 id="q02-stubs">Los dos stubs</h3>
+
+  <p>
+    Un cliente generado no lleva las URLs escritas a mano: <strong>las saca del contrato</strong>.
+    Eso es lo que hacen estos dos, y por eso la suite puede comprobar que cada uno va a donde
+    dice su contrato.
+  </p>
+
+  <pre><code><span class="c">// estilo openapi-generator: lee servers[0].url y paths./q2/rest/quotes</span>
+QuoteRestClient cliente = <span class="k">new</span> QuoteRestClient(contractDocuments, <span class="s">"http://localhost:8080/api"</span>);
+QuoteResponse respuesta = cliente.quote(<span class="k">new</span> QuoteRequest(<span class="s">"SKU-1"</span>, 3, <span class="s">"VIP-9"</span>));
+
+<span class="c">// estilo wsimport: localizador + interfaz de puerto + implementación</span>
+QuotePortType port = <span class="k">new</span> QuoteService().getQuotePort();
+SoapQuoteResponse respuesta = port.quote(<span class="k">new</span> SoapQuoteRequest(<span class="s">"SKU-1"</span>, 3, <span class="s">"VIP-9"</span>));</code></pre>
+
+  <p>
+    <code class="inline">QuoteService</code> resuelve la dirección <code class="inline">soap:address</code>
+    del WSDL, igual que el localizador que genera <code class="inline">wsimport</code>. Y
+    <code class="inline">QuoteSoapClient</code> construye el sobre SOAP a mano con el DOM del JDK,
+    en vez de con el marshaler de JAX-WS: la diferencia es que <strong>se ve el sobre</strong>, que
+    es justo lo que se quiere enseñar.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Comprobación de <code>/api/q2/verify</code></th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>El WSDL declara la operación <code>quote</code></td></tr>
+        <tr><td class="num">2</td><td>El esquema del WSDL define los campos de la petición y de la respuesta</td></tr>
+        <tr><td class="num">3</td><td>El OpenAPI declara la operación <code>quote</code></td></tr>
+        <tr><td class="num">4</td><td><strong>Los dos contratos describen la misma operación</strong></td></tr>
+        <tr><td class="num">5</td><td>El stub SOAP construye un sobre SOAP válido</td></tr>
+        <tr><td class="num">6</td><td>El stub REST invoca la URL que declara el OpenAPI</td></tr>
+        <tr><td class="num">7</td><td>El <code>soap:address</code> del WSDL apunta al servlet SOAP</td></tr>
+        <tr><td class="num">8</td><td><strong>Los dos caminos devuelven el mismo resultado</strong></td></tr>
+        <tr><td class="num">9</td><td>El endpoint SOAP responde con un SOAP Fault ante una petición inválida</td></tr>
+        <tr><td class="num">10</td><td>El endpoint REST responde 400 ante una petición inválida</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="q02-golpes">Los tres golpes de Spring WS 5 + Spring Boot 4</h3>
+
+  <p>
+    Esto es lo que más costó, y es justo lo que distingue a alguien que ha fought con SOAP
+    <em>legacy</em> de alguien que sólo ha leído sobre ello:
+  </p>
+
+  <ol class="steps">
+    <li>
+      <h3><code>@PayloadMethod</code> ya no existe</h3>
+      <p>
+        En Spring WS 5 la operación se declara con <code class="inline">@PayloadRoot(namespace,
+        localPart)</code> y <code class="inline">@ResponsePayload</code>. Y la <strong>clase</strong>
+        del endpoint tiene que llevar <code class="inline">@Endpoint</code> (un
+        <code class="inline">@Component</code> especializado): el mapping la localiza por esa
+        anotación. Con <code class="inline">@Component</code> a secas, el dispatcher responde
+        «no mapping for request».
+      </p>
+    </li>
+    <li>
+      <h3>Boot 4 aparta su auto-configuración</h3>
+      <p>
+        <code class="inline">WebServicesAutoConfiguration</code> lleva
+        <code class="inline">@ConditionalOnMissingBean(WsConfigurationSupport.class)</code>, y
+        <code class="inline">@EnableWs</code> crea justo eso. Con <code class="inline">@EnableWs</code>
+        hay que <strong>registrar el servlet a mano</strong>:
+      </p>
+      <pre><code><span class="k">@Bean</span>
+ServletRegistrationBean&lt;MessageDispatcherServlet&gt; messageDispatcherServlet(WebApplicationContext context) {
+    MessageDispatcherServlet servlet = <span class="k">new</span> MessageDispatcherServlet(context);
+    <span class="k">return new</span> ServletRegistrationBean&lt;&gt;(servlet, <span class="s">"/q2/soap/*"</span>);
+}</code></pre>
+    </li>
+    <li>
+      <h3>El WSDL se publica en <code>&lt;bean&gt;.wsdl</code>, no en <code>?wsdl</code></h3>
+      <p>
+        El servlet busca beans <code class="inline">WsdlDefinition</code> <strong>por nombre</strong>
+        y publica el que encuentre bajo ese nombre. Por eso el bean se llama
+        <code class="inline">quote-service</code> y el WSDL queda en
+        <code class="inline">/api/q2/soap/quote-service.wsdl</code>.
+      </p>
+    </li>
+  </ol>
+</section>
+
+<section id="verificar">
+  <div class="sec-head">
+    <span class="sec-num">04 — Verificación</span>
+    <h2>Cómo se comprueba</h2>
+  </div>
+
+  <pre><code><span class="c"># build y suite completa</span>
+./mvnw -o clean verify
+
+<span class="c"># arrancar</span>
+./mvnw -o spring-boot:run      <span class="c"># http://localhost:8080</span>
+
+<span class="c"># la prueba que verá el entrevistador</span>
+curl -s -X POST http://localhost:8080/api/q1/verify | jq <span class="s">'{total, passed, failed}'</span>
+curl -s -X POST http://localhost:8080/api/q2/verify | jq <span class="s">'{total, passed, failed}'</span>
+<span class="c"># → { "total": 52, "passed": 52, "failed": 0 }</span>
+<span class="c"># → { "total": 10, "passed": 10, "failed": 0 }</span></code></pre>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Prueba</th><th>Qué cubre</th></tr></thead>
+      <tbody>
+        <tr><td><code>MyListContractTest</code></td><td>25 comprobaciones del contrato de <code>List</code> contra las dos implementaciones (50 tests)</td></tr>
+        <tr><td><code>MyListMatchesJdkTest</code></td><td>500 operaciones aleatorias comparando contra <code>java.util.ArrayList</code> / <code>LinkedList</code>, paso a paso</td></tr>
+        <tr><td><code>MyArrayListTest</code> · <code>MyLinkedListTest</code></td><td>Lo específico de cada estructura: crecimiento ×1.5, FIFO, LIFO, iterador bidireccional</td></tr>
+        <tr><td><code>ContractDocumentsTest</code></td><td>Los dos contratos se leen y se interpretan bien</td></tr>
+        <tr><td><code>QuoteStubsTest</code></td><td>Los dos stubs, contra el servidor real, y que devuelven lo mismo</td></tr>
+        <tr><td><code>ContextPathIntegrationTest</code></td><td>Que el context-path se aplica de verdad, con Tomcat en un puerto real</td></tr>
+        <tr><td><code>MyListControllerTest</code></td><td>El contrato HTTP de la pregunta 1: rutas, códigos de estado y forma del JSON</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="label">Las dos suites de verificación</span>
+    <p>
+      Los tests unitarios son la red de seguridad interna. Los endpoints
+      <code class="inline">/api/qN/verify</code> son lo que le permite a quien evalúa
+      <strong>comprobar el comportamiento sin leer una línea de código</strong>, que es justo lo que
+      pedía el enunciado.
+    </p>
+  </div>
+</section>
+
+<section id="patron">
+  <div class="sec-head">
+    <span class="sec-num">05 — El patrón</span>
+    <h2>Lo que sigue cada pregunta</h2>
+  </div>
+
+  <ol class="steps">
+    <li>
+      <h3>Implementación propia</h3>
+      <p>En su propio paquete, sin apoyarse en lo que la pregunta prohíba.</p>
+    </li>
+    <li>
+      <h3>Contrato</h3>
+      <p>El documento que define la operación: WSDL, OpenAPI, o lo que corresponda.</p>
+    </li>
+    <li>
+      <h3>Endpoint de autoverificación</h3>
+      <p>Una suite de comprobaciones que se ejecuta por HTTP y devuelve un informe JSON.</p>
+    </li>
+    <li>
+      <h3>Tests que comparan contra el JDK</h3>
+      <p>Cuando exista un equivalente en la biblioteca estándar, es la evidencia más fuerte.</p>
+    </li>
+    <li>
+      <h3>Documentación</h3>
+      <p>En <code class="inline">docs/</code>, con la tabla comparativa y las decisiones de diseño.</p>
+    </li>
+  </ol>
+
+  <div class="callout warn">
+    <span class="label">Dos trampas que ya están pisadas</span>
+    <p>
+      Spring deriva el <strong>nombre del bean</strong> del nombre de la clase, así que dos
+      preguntas no pueden tener clases con el mismo nombre simple (la pregunta 2 usa
+      <code class="inline">ContractVerificationService</code> y no
+      <code class="inline">VerificationService</code>).
+    </p>
+    <p>
+      Y el <code class="inline">@RestControllerAdvice</code> hay que acotarlo con
+      <code class="inline">basePackages</code> al <strong>módulo entero</strong>, no al subpaquete
+      <code class="inline">web</code>: Spring compara el prefijo con el nombre de la clase del
+      controlador, y el controlador REST de la pregunta 2 vive en
+      <code class="inline">…restvssoap.rest</code>.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>
+    Esta página describe el estado actual del repo. Los documentos en Markdown están en
+    <code class="inline">docs/</code> y las colecciones de Postman en
+    <code class="inline">docs/postman/</code>. El índice del examen es el
+    <code class="inline">README.md</code> de la raíz.
+  </p>
+</footer>
+
+</main>
+</div>
+</div>

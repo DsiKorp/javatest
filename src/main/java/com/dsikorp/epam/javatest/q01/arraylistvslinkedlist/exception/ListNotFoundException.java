@@ -15,11 +15,11 @@ public class ListNotFoundException extends RuntimeException {
 	private final ListType type;
 
 	/**
-	 * Crea la excepción con el identificador y la implementación esperados.
-	 *
-	 * @param id el identificador pedido
-	 * @param type la implementación que se esperaba
-	 */
+  * Crea la excepción con el identificador y la implementación esperados.
+  *
+  * @param id el identificador pedido
+  * @param type la implementación que se esperaba
+  */
 	public ListNotFoundException(String id, ListType type) {
 		super("No " + type + " list found with id '" + id + "'");
 		this.id = id;
@@ -27,19 +27,19 @@ public class ListNotFoundException extends RuntimeException {
 	}
 
 	/**
-	 * Devuelve el identificador que no se encontró.
-	 *
-	 * @return el identificador que no se encontró
-	 */
+  * Devuelve el identificador que no se encontró.
+  *
+  * @return el identificador que no se encontró
+  */
 	public String getId() {
 		return id;
 	}
 
 	/**
-	 * Devuelve la implementación que se esperaba.
-	 *
-	 * @return la implementación que se esperaba
-	 */
+  * Devuelve la implementación que se esperaba.
+  *
+  * @return la implementación que se esperaba
+  */
 	public ListType getType() {
 		return type;
 	}

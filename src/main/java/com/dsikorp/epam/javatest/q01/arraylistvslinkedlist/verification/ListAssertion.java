@@ -13,9 +13,9 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.collections.MyList;
  * <p><strong>Ejemplo:</strong></p>
  * <pre>{@code
  * ListAssertion compruebaElTamanio = (list, type) -> {
- *     list.add("a");
- *     list.add("b");
- *     equal(2, list.size(), "la lista debería tener 2 elementos");
+ * list.add("a");
+ * list.add("b");
+ * equal(2, list.size(), "la lista debería tener 2 elementos");
  * };
  * }</pre>
  */
@@ -23,12 +23,12 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.collections.MyList;
 public interface ListAssertion {
 
 	/**
-	 * Ejecuta la comprobación.
-	 *
-	 * @param list lista vacía de la implementación bajo prueba
-	 * @param type implementación bajo prueba
-	 * @throws AssertionError si la comprobación no se supera
-	 * @throws Exception si la comprobación falla por otra causa
-	 */
+  * Ejecuta la comprobación.
+  *
+  * @param list lista vacía de la implementación bajo prueba
+  * @param type implementación bajo prueba
+  * @throws AssertionError si la comprobación no se supera
+  * @throws Exception si la comprobación falla por otra causa
+  */
 	void verify(MyList<Object> list, ListType type) throws Exception;
 }

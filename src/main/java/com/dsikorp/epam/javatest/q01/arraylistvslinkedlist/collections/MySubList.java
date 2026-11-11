@@ -13,9 +13,9 @@ import java.util.ListIterator;
  *
  * <p>Semántica, igual que en el JDK:</p>
  * <ul>
- *   <li>Las mutaciones hechas <em>a través</em> de la vista se reflejan en la raíz.</li>
- *   <li>Una modificación estructural de la raíz <em>desde fuera</em> deja la vista obsoleta y la
- *       siguiente operación lanza {@link ConcurrentModificationException}.</li>
+ * <li>Las mutaciones hechas <em>a través</em> de la vista se reflejan en la raíz.</li>
+ * <li>Una modificación estructural de la raíz <em>desde fuera</em> deja la vista obsoleta y la
+ * siguiente operación lanza {@link ConcurrentModificationException}.</li>
  * </ul>
  *
  * <p><strong>Ejemplo:</strong></p>
@@ -104,9 +104,9 @@ final class MySubList<E> extends AbstractMyList<E> {
 	}
 
 	/**
-	 * El contador de modificaciones que vigila el iterador es el de la raíz: cualquier cambio
-	 * estructural, venga de donde venga, debe detectarse.
-	 */
+  * El contador de modificaciones que vigila el iterador es el de la raíz: cualquier cambio
+  * estructural, venga de donde venga, debe detectarse.
+  */
 	@Override
 	int modCount() {
 		return root.modCount();

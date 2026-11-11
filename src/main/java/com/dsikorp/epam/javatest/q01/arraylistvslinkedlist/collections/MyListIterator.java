@@ -9,13 +9,13 @@ import java.util.NoSuchElementException;
  *
  * <p>Reproduce el comportamiento del JDK:</p>
  * <ul>
- *   <li><strong>Fail-fast</strong>: si la lista se modifica estructuralmente mientras se recorre,
- *       la siguiente llamada a {@link #next()}, {@link #previous()}, {@link #set(Object)},
- *       {@link #add(Object)} o {@link #remove()} lanza {@link ConcurrentModificationException}.</li>
- *   <li>{@link #remove()} borra el último elemento devuelto y no puede invocarse dos veces
- *       seguidas sin una llamada intermedia a {@code next}/{@code previous}.</li>
- *   <li>{@link #add(Object)} inserta en la posición del cursor y deja el cursor detrás del
- *       elemento insertado.</li>
+ * <li><strong>Fail-fast</strong>: si la lista se modifica estructuralmente mientras se recorre,
+ * la siguiente llamada a {@link #next()}, {@link #previous()}, {@link #set(Object)},
+ * {@link #add(Object)} o {@link #remove()} lanza {@link ConcurrentModificationException}.</li>
+ * <li>{@link #remove()} borra el último elemento devuelto y no puede invocarse dos veces
+ * seguidas sin una llamada intermedia a {@code next}/{@code previous}.</li>
+ * <li>{@link #add(Object)} inserta en la posición del cursor y deja el cursor detrás del
+ * elemento insertado.</li>
  * </ul>
  *
  * <p><strong>Ejemplo: recorrido y borrado durante el recorrido.</strong></p>
@@ -25,10 +25,10 @@ import java.util.NoSuchElementException;
  *
  * Iterator<String> iterador = lista.iterator();
  * while (iterador.hasNext()) {
- *     String elemento = iterador.next();
- *     if (elemento.equals("b")) {
- *         iterador.remove();      // borra el último devuelto: ["a", "c"]
- *     }
+ * String elemento = iterador.next();
+ * if (elemento.equals("b")) {
+ * iterador.remove();      // borra el último devuelto: ["a", "c"]
+ * }
  * }
  * }</pre>
  *

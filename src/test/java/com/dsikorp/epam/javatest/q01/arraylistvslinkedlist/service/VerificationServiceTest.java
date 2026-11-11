@@ -48,7 +48,7 @@ class VerificationServiceTest {
 			.containsOnly("LINKED_LIST");
 	}
 
-	private static String failing(com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.dto.VerificationReport report) {
+	private static String failing(com.dsikorp.epam.javatest.common.verification.VerificationReport report) {
 		return report.checks()
 			.stream()
 			.filter(check -> !check.passed())

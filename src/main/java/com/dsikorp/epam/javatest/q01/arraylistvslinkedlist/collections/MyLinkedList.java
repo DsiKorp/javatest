@@ -13,13 +13,13 @@ import java.util.Objects;
  * <p>Reproduce el diseño de {@code java.util.LinkedList}, que además implementa
  * {@link Deque} y por tanto puede usarse como cola FIFO:</p>
  * <ul>
- *   <li>Cada nodo guarda su elemento y sus dos vecinos ({@code next} y {@code prev}), lo que
- *       permite recorrer la lista en ambos sentidos.</li>
- *   <li>Insertar y quitar en los extremos es O(1): basta con rehacer dos enlaces.</li>
- *   <li>Insertar o quitar por posición es O(n): hay que llegar hasta el nodo, y para eso se
- *       recorre desde el extremo más cercano.</li>
- *   <li>A diferencia de {@link MyArrayList}, no es {@link java.util.RandomAccess}: el acceso
- *       posicional es lineal.</li>
+ * <li>Cada nodo guarda su elemento y sus dos vecinos ({@code next} y {@code prev}), lo que
+ * permite recorrer la lista en ambos sentidos.</li>
+ * <li>Insertar y quitar en los extremos es O(1): basta con rehacer dos enlaces.</li>
+ * <li>Insertar o quitar por posición es O(n): hay que llegar hasta el nodo, y para eso se
+ * recorre desde el extremo más cercano.</li>
+ * <li>A diferencia de {@link MyArrayList}, no es {@link java.util.RandomAccess}: el acceso
+ * posicional es lineal.</li>
  * </ul>
  *
  * <p><strong>Ejemplo como lista:</strong></p>
@@ -83,16 +83,16 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	private int size;
 
 	/**
-	 * Crea una lista vacía.
-	 */
+  * Crea una lista vacía.
+  */
 	public MyLinkedList() {
 	}
 
 	/**
-	 * Crea una lista con los elementos de la colección dada.
-	 *
-	 * @param collection colección de origen
-	 */
+  * Crea una lista con los elementos de la colección dada.
+  *
+  * @param collection colección de origen
+  */
 	public MyLinkedList(Collection<? extends E> collection) {
 		for (E element : collection) {
 			add(element);
@@ -343,10 +343,10 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Quita y devuelve la cabeza de la lista.
-	 *
-	 * @return la cabeza, o {@code null} si la lista está vacía
-	 */
+  * Quita y devuelve la cabeza de la lista.
+  *
+  * @return la cabeza, o {@code null} si la lista está vacía
+  */
 	@Override
 	public E remove() {
 		return removeFirst();
@@ -357,12 +357,12 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 		ListIterator<E> delegate = listIterator(size);
 		return new Iterator<>() {
 
-			@Override
+	@Override
 			public boolean hasNext() {
 				return delegate.hasPrevious();
 			}
 
-			@Override
+	@Override
 			public E next() {
 				return delegate.previous();
 			}
@@ -370,16 +370,16 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Devuelve una lista con los mismos elementos en orden inverso.
-	 *
-	 * <p><strong>Desviación consciente respecto al JDK</strong>: el JDK devuelve una
-	 * <em>vista</em> invertida; aquí se devuelve una <em>copia</em>. El motivo es que
-	 * {@code java.util.List.reversed()} y {@code java.util.Deque.reversed()} tienen la misma
-	 * firma con tipos de retorno distintos, y esta clase implementa las dos interfaces. El
-	 * comportamiento es idéntico en {@code MyArrayList} y en {@code MyLinkedList}.</p>
-	 *
-	 * @return una lista nueva con los elementos en orden inverso
-	 */
+  * Devuelve una lista con los mismos elementos en orden inverso.
+  *
+  * <p><strong>Desviación consciente respecto al JDK</strong>: el JDK devuelve una
+  * <em>vista</em> invertida; aquí se devuelve una <em>copia</em>. El motivo es que
+  * {@code java.util.List.reversed()} y {@code java.util.Deque.reversed()} tienen la misma
+  * firma con tipos de retorno distintos, y esta clase implementa las dos interfaces. El
+  * comportamiento es idéntico en {@code MyArrayList} y en {@code MyLinkedList}.</p>
+  *
+  * @return una lista nueva con los elementos en orden inverso
+  */
 	@Override
 	public MyLinkedList<E> reversed() {
 		MyLinkedList<E> copy = new MyLinkedList<>();
@@ -394,11 +394,11 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Devuelve el nodo que ocupa la posición indicada, caminando desde el extremo más cercano.
-	 *
-	 * @param index posición del nodo
-	 * @return el nodo
-	 */
+  * Devuelve el nodo que ocupa la posición indicada, caminando desde el extremo más cercano.
+  *
+  * @param index posición del nodo
+  * @return el nodo
+  */
 	private Node<E> node(int index) {
 		checkIndex(index);
 		Node<E> current;
@@ -418,8 +418,8 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Inserta un nodo nuevo al principio de la lista.
-	 */
+  * Inserta un nodo nuevo al principio de la lista.
+  */
 	private void linkFirst(E element) {
 		Node<E> created = new Node<>(element);
 		if (first == null) {
@@ -434,8 +434,8 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Inserta un nodo nuevo al final de la lista.
-	 */
+  * Inserta un nodo nuevo al final de la lista.
+  */
 	private void linkLast(E element) {
 		Node<E> created = new Node<>(element);
 		if (last == null) {
@@ -450,8 +450,8 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Inserta un nodo nuevo justo después del nodo dado, que no puede ser {@code null}.
-	 */
+  * Inserta un nodo nuevo justo después del nodo dado, que no puede ser {@code null}.
+  */
 	private void linkAfter(Node<E> node, E element) {
 		Node<E> created = new Node<>(element);
 		created.prev = node;
@@ -466,8 +466,8 @@ public class MyLinkedList<E> extends AbstractMyList<E> implements Deque<E> {
 	}
 
 	/**
-	 * Desconecta un nodo de la cadena y devuelve su elemento.
-	 */
+  * Desconecta un nodo de la cadena y devuelve su elemento.
+  */
 	private E unlink(Node<E> node) {
 		E element = node.element;
 		Node<E> previous = node.prev;

@@ -12,7 +12,7 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.collections.ListType;
  * // {"id":"9eff4923-e21f-4333-87d3-d1e8d15e99e2","type":"ARRAY_LIST",
  * //  "size":3,"values":[1,"a",null]}
  * ListResponse respuesta = new ListResponse("9eff4923-e21f-4333-87d3-d1e8d15e99e2",
- *         ListType.ARRAY_LIST, 3, List.of(1, "a", null));
+ * ListType.ARRAY_LIST, 3, List.of(1, "a", null));
  * }</pre>
  *
  * @param id identificador de la lista

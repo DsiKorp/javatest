@@ -12,7 +12,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.dto.ErrorResponse;
+import com.dsikorp.epam.javatest.common.dto.ErrorResponse;
 import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.exception.InvalidListTypeException;
 import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.exception.ListNotFoundException;
 
@@ -30,30 +30,30 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.exception.ListNotFoun
 public class GlobalExceptionHandler {
 
 	/**
-	 * Crea el manejador de errores de este punto del examen.
-	 */
+  * Crea el manejador de errores de este punto del examen.
+  */
 	public GlobalExceptionHandler() {
 	}
 
 	/**
-	 * Maneja una lista que no existe.
+  * Maneja una lista que no existe.
   *
-	 * @param error lista inexistente
-	 * @param request petición que originó el error
-	 * @return {@code 404 Not Found}
-	 */
+  * @param error lista inexistente
+  * @param request petición que originó el error
+  * @return {@code 404 Not Found}
+  */
 	@ExceptionHandler(ListNotFoundException.class)
 	public ResponseEntity<ErrorResponse> handleNotFound(ListNotFoundException error, HttpServletRequest request) {
 		return build(HttpStatus.NOT_FOUND, error.getMessage(), request, List.of());
 	}
 
 	/**
-	 * Maneja un tipo de lista que no corresponde a ninguna implementación.
+  * Maneja un tipo de lista que no corresponde a ninguna implementación.
   *
-	 * @param error tipo de lista desconocido
-	 * @param request petición que originó el error
-	 * @return {@code 400 Bad Request}
-	 */
+  * @param error tipo de lista desconocido
+  * @param request petición que originó el error
+  * @return {@code 400 Bad Request}
+  */
 	@ExceptionHandler(InvalidListTypeException.class)
 	public ResponseEntity<ErrorResponse> handleInvalidType(InvalidListTypeException error,
 			HttpServletRequest request) {
@@ -61,12 +61,12 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * Maneja un índice que está fuera del rango de la lista.
+  * Maneja un índice que está fuera del rango de la lista.
   *
-	 * @param error índice fuera de rango
-	 * @param request petición que originó el error
-	 * @return {@code 400 Bad Request}
-	 */
+  * @param error índice fuera de rango
+  * @param request petición que originó el error
+  * @return {@code 400 Bad Request}
+  */
 	@ExceptionHandler(IndexOutOfBoundsException.class)
 	public ResponseEntity<ErrorResponse> handleIndexOutOfBounds(IndexOutOfBoundsException error,
 			HttpServletRequest request) {
@@ -74,12 +74,12 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * Maneja un parámetro de la petición que no cumple las restricciones de validación.
+  * Maneja un parámetro de la petición que no cumple las restricciones de validación.
   *
-	 * @param error violaciones de validación de los parámetros de la petición
-	 * @param request petición que originó el error
-	 * @return {@code 400 Bad Request}
-	 */
+  * @param error violaciones de validación de los parámetros de la petición
+  * @param request petición que originó el error
+  * @return {@code 400 Bad Request}
+  */
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException error,
 			HttpServletRequest request) {
@@ -91,12 +91,12 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * Maneja un cuerpo de la petición que no se puede leer.
+  * Maneja un cuerpo de la petición que no se puede leer.
   *
-	 * @param error cuerpo de la petición ilegible
-	 * @param request petición que originó el error
-	 * @return {@code 400 Bad Request}
-	 */
+  * @param error cuerpo de la petición ilegible
+  * @param request petición que originó el error
+  * @return {@code 400 Bad Request}
+  */
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException error,
 			HttpServletRequest request) {

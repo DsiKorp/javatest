@@ -31,10 +31,10 @@
  * import java.util.Iterator;
  *
  * public boolean equals(Object o) {
- *     if (!(o instanceof List<?> otra)) {   // List es una interface: permitido
- *         return false;
- *     }
- *     ...
+ * if (!(o instanceof List<?> otra)) {   // List es una interface: permitido
+ * return false;
+ * }
+ * ...
  * }
  *
  * // Incorrecto: delegar en la implementación

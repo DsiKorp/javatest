@@ -13,16 +13,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class JavatestApplication {
 
 	/**
-	 * Crea la aplicación.
-	 */
+  * Crea la aplicación.
+  */
 	public JavatestApplication() {
 	}
 
 	/**
-	 * Arranca la aplicación Spring Boot.
-	 *
-	 * @param args argumentos de línea de comandos
-	 */
+  * Arranca la aplicación Spring Boot.
+  *
+  * @param args argumentos de línea de comandos
+  */
 	public static void main(String[] args) {
 		SpringApplication.run(JavatestApplication.class, args);
 	}

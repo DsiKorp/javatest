@@ -1,0 +1,144 @@
+# Contrato REST del servicio de presupuestos.
+#
+# Este fichero es el equivalente del WSDL en el mundo REST, y está escrito a mano a propósito:
+# es el "contrato primero", donde el documento OpenAPI es la fuente de verdad y el cliente se
+# genera a partir de él.
+#
+# Es el mismo esquema de campos que el del WSDL (src/main/resources/q02/wsdl/quote-service.wsdl):
+# sku, quantity, customerId por un lado; sku, quantity, unitPrice, total por otro. Esa
+# coincidencia es exactamente lo que comprueba la suite de verificación: los dos contratos
+# describen la MISMA operación, escrita en dos dialectos distintos.
+openapi: 3.1.0
+
+info:
+  title: API de presupuestos (REST)
+  version: "1.0.0"
+  description: |
+    Calcula el presupuesto de un pedido.
+
+    Es la misma operación de negocio que expone el endpoint SOAP del servicio de presupuestos
+    (`/q2/soap/quote-service`, con su WSDL en `/q2/soap/quote-service.wsdl`). El negocio está
+    detrás de los dos; lo único que cambia es el contrato y el transporte.
+
+    Catálogo de precios: SKU-1 = 19.99, SKU-2 = 49.50, SKU-3 = 5.25.
+    Los clientes cuyo identificador empieza por `VIP-` tienen un 10 % de descuento.
+
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor local
+
+paths:
+  /q2/rest/quotes:
+    post:
+      operationId: quote
+      summary: Calcula el presupuesto de un pedido
+      description: |
+        Devuelve el precio unitario y el importe total tras el descuento del cliente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteRequest"
+            example:
+              sku: SKU-1
+              quantity: 3
+              customerId: VIP-9
+      responses:
+        "200":
+          description: Presupuesto calculado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteResponse"
+              example:
+                sku: SKU-1
+                quantity: 3
+                unitPrice: 19.99
+                total: 53.97
+        "400":
+          description: Petición inválida (cantidad no positiva o producto desconocido)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    QuoteRequest:
+      type: object
+      description: La petición de presupuesto.
+      required:
+        - sku
+        - quantity
+        - customerId
+      properties:
+        sku:
+          type: string
+          description: Referencia del producto.
+          example: SKU-1
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Unidades pedidas.
+          example: 3
+        customerId:
+          type: string
+          description: |
+            Identificador del cliente. Los que empiezan por `VIP-` tienen un 10 % de descuento.
+          example: VIP-9
+
+    QuoteResponse:
+      type: object
+      description: El presupuesto calculado.
+      required:
+        - sku
+        - quantity
+        - unitPrice
+        - total
+      properties:
+        sku:
+          type: string
+          example: SKU-1
+        quantity:
+          type: integer
+          format: int32
+          example: 3
+        unitPrice:
+          type: number
+          format: double
+          description: Precio unitario sin descuento.
+          example: 19.99
+        total:
+          type: number
+          format: double
+          description: Importe final tras el descuento.
+          example: 53.97
+
+    ErrorResponse:
+      type: object
+      description: El error devuelto cuando la petición no es válida.
+      required:
+        - status
+        - message
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: "unknown sku: NOPE"
+        path:
+          type: string
+        details:
+          type: array
+          items:
+            type: string

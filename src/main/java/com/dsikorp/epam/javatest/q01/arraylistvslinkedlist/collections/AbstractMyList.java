@@ -25,12 +25,12 @@ import java.util.function.UnaryOperator;
  *
  * <p>Dos detalles que replican el JDK y que conviene destacar:</p>
  * <ul>
- *   <li>{@link #equals(Object)} compara <em>elemento a elemento contra cualquier</em>
- *       {@link List}, de modo que una {@code MyArrayList} y una {@code MyLinkedList} con los
- *       mismos elementos son iguales entre sí, igual que {@code ArrayList.equals(LinkedList)}.</li>
- *   <li>{@link #sort(Comparator)} está sobreescrito con un <em>merge sort propio</em>: el
- *       método {@code default} de {@code List} delega en {@code Arrays.sort}, que está prohibido
- *       en este paquete.</li>
+ * <li>{@link #equals(Object)} compara <em>elemento a elemento contra cualquier</em>
+ * {@link List}, de modo que una {@code MyArrayList} y una {@code MyLinkedList} con los
+ * mismos elementos son iguales entre sí, igual que {@code ArrayList.equals(LinkedList)}.</li>
+ * <li>{@link #sort(Comparator)} está sobreescrito con un <em>merge sort propio</em>: el
+ * método {@code default} de {@code List} delega en {@code Arrays.sort}, que está prohibido
+ * en este paquete.</li>
  * </ul>
  *
  * <p><strong>Ejemplo: así se implementa una lista propia.</strong> Basta con las seis
@@ -39,44 +39,44 @@ import java.util.function.UnaryOperator;
  * <pre>{@code
  * final class MiListaDeEnteros extends AbstractMyList<Integer> {
  *
- *     private final int[] datos = new int[10];
- *     private int size;
+ * private final int[] datos = new int[10];
+ * private int size;
  *
- *     @Override public int size() { return size; }
+ * @Override public int size() { return size; }
  *
- *     @Override public Integer get(int index) {
- *         if (index < 0 || index >= size) {
- *             throw new IndexOutOfBoundsException("Index " + index + " out of bounds");
- *         }
- *         return datos[index];
- *     }
+ * @Override public Integer get(int index) {
+ * if (index < 0 || index >= size) {
+ * throw new IndexOutOfBoundsException("Index " + index + " out of bounds");
+ * }
+ * return datos[index];
+ * }
  *
- *     @Override public Integer set(int index, Integer element) {
- *         Integer anterior = get(index);
- *         datos[index] = element;
- *         return anterior;
- *     }
+ * @Override public Integer set(int index, Integer element) {
+ * Integer anterior = get(index);
+ * datos[index] = element;
+ * return anterior;
+ * }
  *
- *     @Override public void add(int index, Integer element) {
- *         for (int i = size; i > index; i--) {
- *             datos[i] = datos[i - 1];
- *         }
- *         datos[index] = element;
- *         size++;
- *     }
+ * @Override public void add(int index, Integer element) {
+ * for (int i = size; i > index; i--) {
+ * datos[i] = datos[i - 1];
+ * }
+ * datos[index] = element;
+ * size++;
+ * }
  *
- *     @Override public Integer remove(int index) {
- *         Integer eliminado = get(index);
- *         for (int i = index; i < size - 1; i++) {
- *             datos[i] = datos[i + 1];
- *         }
- *         size--;
- *         return eliminado;
- *     }
+ * @Override public Integer remove(int index) {
+ * Integer eliminado = get(index);
+ * for (int i = index; i < size - 1; i++) {
+ * datos[i] = datos[i + 1];
+ * }
+ * size--;
+ * return eliminado;
+ * }
  *
- *     @Override public ListIterator<Integer> listIterator(int index) {
- *         return new MiIterador(this, index);   // un iterador propio, fail-fast
- *     }
+ * @Override public ListIterator<Integer> listIterator(int index) {
+ * return new MiIterador(this, index);   // un iterador propio, fail-fast
+ * }
  * }
  * }</pre>
  *
@@ -91,20 +91,20 @@ import java.util.function.UnaryOperator;
 public abstract class AbstractMyList<E> implements MyList<E> {
 
 	/**
-	 * Contador de modificaciones estructurales. Lo usa el iterador para detectar modificaciones
-	 * concurrentes (comportamiento fail-fast).
-	 */
+  * Contador de modificaciones estructurales. Lo usa el iterador para detectar modificaciones
+  * concurrentes (comportamiento fail-fast).
+  */
 	protected int modCount;
 
 	/**
-	 * Constructor protegido: sólo las subclases de este paquete pueden instanciar la clase base.
-	 */
+  * Constructor protegido: sólo las subclases de este paquete pueden instanciar la clase base.
+  */
 	protected AbstractMyList() {
 	}
 
 	/**
-	 * @return el contador de modificaciones estructurales actual
-	 */
+  * @return el contador de modificaciones estructurales actual
+  */
 	int modCount() {
 		return modCount;
 	}
@@ -114,43 +114,43 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	// ------------------------------------------------------------------
 
 	/**
-	 * @return el número de elementos de la lista
-	 */
+  * @return el número de elementos de la lista
+  */
 	public abstract int size();
 
 	/**
-	 * @param index posición del elemento
-	 * @return el elemento en esa posición
-	 * @throws IndexOutOfBoundsException si la posición no es válida
-	 */
+  * @param index posición del elemento
+  * @return el elemento en esa posición
+  * @throws IndexOutOfBoundsException si la posición no es válida
+  */
 	public abstract E get(int index);
 
 	/**
-	 * @param index posición del elemento
-	 * @param element nuevo valor
-	 * @return el valor anterior
-	 * @throws IndexOutOfBoundsException si la posición no es válida
-	 */
+  * @param index posición del elemento
+  * @param element nuevo valor
+  * @return el valor anterior
+  * @throws IndexOutOfBoundsException si la posición no es válida
+  */
 	public abstract E set(int index, E element);
 
 	/**
-	 * @param index posición de inserción
-	 * @param element elemento a insertar
-	 * @throws IndexOutOfBoundsException si la posición no es válida
-	 */
+  * @param index posición de inserción
+  * @param element elemento a insertar
+  * @throws IndexOutOfBoundsException si la posición no es válida
+  */
 	public abstract void add(int index, E element);
 
 	/**
-	 * @param index posición del elemento
-	 * @return el elemento eliminado
-	 * @throws IndexOutOfBoundsException si la posición no es válida
-	 */
+  * @param index posición del elemento
+  * @return el elemento eliminado
+  * @throws IndexOutOfBoundsException si la posición no es válida
+  */
 	public abstract E remove(int index);
 
 	/**
-	 * @param index posición inicial del iterador
-	 * @return un iterador bidireccional situado en {@code index}
-	 */
+  * @param index posición inicial del iterador
+  * @return un iterador bidireccional situado en {@code index}
+  */
 	public abstract ListIterator<E> listIterator(int index);
 
 	// ------------------------------------------------------------------
@@ -315,10 +315,10 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Compara elemento a elemento contra cualquier {@link List}, no sólo contra otra
-	 * {@code MyList}. Así {@code MyArrayList} y {@code MyLinkedList} con los mismos elementos
-	 * resultan iguales, como en el JDK.
-	 */
+  * Compara elemento a elemento contra cualquier {@link List}, no sólo contra otra
+  * {@code MyList}. Así {@code MyArrayList} y {@code MyLinkedList} con los mismos elementos
+  * resultan iguales, como en el JDK.
+  */
 	@Override
 	public boolean equals(Object o) {
 		if (o == this) {
@@ -339,9 +339,9 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	}
 
 	/**
-	 * El algoritmo 31-based del JDK, de modo que dos listas iguales (aunque de implementaciones
-	 * distintas) producen el mismo hash.
-	 */
+  * El algoritmo 31-based del JDK, de modo que dos listas iguales (aunque de implementaciones
+  * distintas) producen el mismo hash.
+  */
 	@Override
 	public int hashCode() {
 		int hash = 1;
@@ -458,11 +458,11 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Valida una posición de lectura o de escritura de un elemento.
-	 *
-	 * @param index posición a validar
-	 * @throws IndexOutOfBoundsException si {@code index} no está en {@code [0, size)}
-	 */
+  * Valida una posición de lectura o de escritura de un elemento.
+  *
+  * @param index posición a validar
+  * @throws IndexOutOfBoundsException si {@code index} no está en {@code [0, size)}
+  */
 	protected void checkIndex(int index) {
 		if (index < 0 || index >= size()) {
 			throw new IndexOutOfBoundsException("Index " + index + " out of bounds for length " + size());
@@ -470,11 +470,11 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	}
 
 	/**
-	 * Valida una posición de inserción, que puede ser justo una más allá del último elemento.
-	 *
-	 * @param index posición a validar
-	 * @throws IndexOutOfBoundsException si {@code index} no está en {@code [0, size]}
-	 */
+  * Valida una posición de inserción, que puede ser justo una más allá del último elemento.
+  *
+  * @param index posición a validar
+  * @throws IndexOutOfBoundsException si {@code index} no está en {@code [0, size]}
+  */
 	protected void checkPositionIndex(int index) {
 		if (index < 0 || index > size()) {
 			throw new IndexOutOfBoundsException("Index " + index + " out of bounds for length " + size());
@@ -482,12 +482,12 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	}
 
 	/**
-	 * Valida el rango de una vista de {@code subList}.
-	 *
-	 * @param fromIndex posición inicial, inclusiva
-	 * @param toIndex posición final, exclusiva
-	 * @throws IndexOutOfBoundsException si el rango no es válido para el tamaño actual
-	 */
+  * Valida el rango de una vista de {@code subList}.
+  *
+  * @param fromIndex posición inicial, inclusiva
+  * @param toIndex posición final, exclusiva
+  * @throws IndexOutOfBoundsException si el rango no es válido para el tamaño actual
+  */
 	protected void checkSubListRange(int fromIndex, int toIndex) {
 		if (fromIndex < 0 || toIndex > size() || fromIndex > toIndex) {
 			throw new IndexOutOfBoundsException(
@@ -496,18 +496,18 @@ public abstract class AbstractMyList<E> implements MyList<E> {
 	}
 
 	/**
-	 * Desplazamiento absoluto de esta lista respecto de la lista raíz. Una vista de
-	 * {@code subList} devuelve el suyo para poder anidar subList sin casos especiales.
-	 *
-	 * @return desplazamiento respecto de la raíz
-	 */
+  * Desplazamiento absoluto de esta lista respecto de la lista raíz. Una vista de
+  * {@code subList} devuelve el suyo para poder anidar subList sin casos especiales.
+  *
+  * @return desplazamiento respecto de la raíz
+  */
 	int absoluteOffset() {
 		return 0;
 	}
 
 	/**
-	 * @return la lista raíz (esta misma, salvo en las vistas de {@code subList})
-	 */
+  * @return la lista raíz (esta misma, salvo en las vistas de {@code subList})
+  */
 	AbstractMyList<E> root() {
 		return this;
 	}

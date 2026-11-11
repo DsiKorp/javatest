@@ -1,4 +1,4 @@
-package com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.dto;
+package com.dsikorp.epam.javatest.common.dto;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,8 +12,8 @@ import java.util.List;
  * //  "message":"No ARRAY_LIST list found with id 'no-existe'",
  * //  "path":"/api/q1/lists/arraylist/no-existe","details":[]}
  * ErrorResponse error = new ErrorResponse(Instant.now(), 404, "Not Found",
- *         "No ARRAY_LIST list found with id 'no-existe'",
- *         "/api/q1/lists/arraylist/no-existe", List.of());
+ * "No ARRAY_LIST list found with id 'no-existe'",
+ * "/api/q1/lists/arraylist/no-existe", List.of());
  * }</pre>
  *
  * @param timestamp momento en que se produjo el error

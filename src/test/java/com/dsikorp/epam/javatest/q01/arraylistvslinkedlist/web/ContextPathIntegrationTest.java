@@ -18,6 +18,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
  * <p>El slice web ({@link MyListControllerTest}) usa MockMvc, que manda la petición
  * directamente al dispatcher y por eso no ve el context-path. Este test, en cambio, levanta
  * Tomcat en un puerto real y habla HTTP, así que sí comprueba la URL pública completa.</p>
+ *
+ * <p>El context-path es {@code /api} y cada pregunta del examen cuelga de su propio espacio
+ * dentro de él: {@code /api/q1/...}, {@code /api/q2/...}.</p>
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ContextPathIntegrationTest {
@@ -33,16 +36,23 @@ class ContextPathIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("las URLs públicas llevan el prefijo del context-path")
+	@DisplayName("las URLs públicas llevan el prefijo del context-path y el de la pregunta")
 	void publicUrlsCarryTheContextPath() throws Exception {
 		assertThat(get("/api/q1/lists").statusCode()).isEqualTo(200);
 		assertThat(get("/api/q1/verify").statusCode()).isEqualTo(200);
 	}
 
 	@Test
-	@DisplayName("sin el prefijo no hay nada: el context-path es obligatorio")
-	void urlsWithoutThePrefixDoNotExist() throws Exception {
+	@DisplayName("sin el prefijo del context-path no hay nada")
+	void urlsWithoutTheContextPathDoNotExist() throws Exception {
 		assertThat(get("/lists").statusCode()).isEqualTo(404);
 		assertThat(get("/verify").statusCode()).isEqualTo(404);
+	}
+
+	@Test
+	@DisplayName("el prefijo del context-path sin el de la pregunta tampoco")
+	void urlsWithoutTheQuestionPrefixDoNotExist() throws Exception {
+		assertThat(get("/api/lists").statusCode()).isEqualTo(404);
+		assertThat(get("/api/verify").statusCode()).isEqualTo(404);
 	}
 }

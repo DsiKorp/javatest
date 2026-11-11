@@ -1,10 +1,10 @@
-package com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.dto;
+package com.dsikorp.epam.javatest.common.verification;
 
 /**
  * Resultado de una comprobación individual de la suite de verificación.
  *
  * @param name nombre de la comprobación
- * @param implementation implementación de lista sobre la que se ha ejecutado
+ * @param implementation implementación o camino sobre el que se ha ejecutado
  * @param passed si la comprobación ha sido superada
  * @param message detalle del resultado
  * @param durationMs duración de la comprobación en milisegundos

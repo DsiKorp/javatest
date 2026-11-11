@@ -10,12 +10,12 @@ import java.util.RandomAccess;
  *
  * <p>Reproduce el diseño de {@code java.util.ArrayList}:</p>
  * <ul>
- *   <li>Los elementos se guardan en un {@code Object[]} (array crudo, por los genéricos) y
- *       {@code size} es el número de posiciones ocupadas.</li>
- *   <li>Al insertar en medio se desplaza el bloque con {@code System.arraycopy}: coste O(n).</li>
- *   <li>La capacidad crece ×1.5 ({@code old + (old >> 1)}), como en el JDK.</li>
- *   <li>Acceso posicional O(1); implementación de {@link RandomAccess} para que los bucles
- *       optimizados de Java distingan esta lista de una enlazada.</li>
+ * <li>Los elementos se guardan en un {@code Object[]} (array crudo, por los genéricos) y
+ * {@code size} es el número de posiciones ocupadas.</li>
+ * <li>Al insertar en medio se desplaza el bloque con {@code System.arraycopy}: coste O(n).</li>
+ * <li>La capacidad crece ×1.5 ({@code old + (old >> 1)}), como en el JDK.</li>
+ * <li>Acceso posicional O(1); implementación de {@link RandomAccess} para que los bucles
+ * optimizados de Java distingan esta lista de una enlazada.</li>
  * </ul>
  *
  * <p><strong>Ejemplo:</strong></p>
@@ -34,7 +34,7 @@ import java.util.RandomAccess;
  * System.out.println(lista.indexOf("c")); // 1
  *
  * for (String elemento : lista) {
- *     System.out.println(elemento);  // z, c
+ * System.out.println(elemento);  // z, c
  * }
  * }</pre>
  *
@@ -57,18 +57,18 @@ public class MyArrayList<E> extends AbstractMyList<E> implements RandomAccess {
 	private int size;
 
 	/**
-	 * Crea una lista vacía con la capacidad inicial por defecto.
-	 */
+  * Crea una lista vacía con la capacidad inicial por defecto.
+  */
 	public MyArrayList() {
 		this.elementData = new Object[DEFAULT_CAPACITY];
 	}
 
 	/**
-	 * Crea una lista vacía con la capacidad inicial indicada.
-	 *
-	 * @param initialCapacity capacidad inicial
-	 * @throws IllegalArgumentException si la capacidad inicial es negativa
-	 */
+  * Crea una lista vacía con la capacidad inicial indicada.
+  *
+  * @param initialCapacity capacidad inicial
+  * @throws IllegalArgumentException si la capacidad inicial es negativa
+  */
 	public MyArrayList(int initialCapacity) {
 		if (initialCapacity < 0) {
 			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
@@ -77,10 +77,10 @@ public class MyArrayList<E> extends AbstractMyList<E> implements RandomAccess {
 	}
 
 	/**
-	 * Crea una lista con los elementos de la colección dada.
-	 *
-	 * @param collection colección de origen
-	 */
+  * Crea una lista con los elementos de la colección dada.
+  *
+  * @param collection colección de origen
+  */
 	public MyArrayList(Collection<? extends E> collection) {
 		this.elementData = new Object[Math.max(collection.size(), DEFAULT_CAPACITY)];
 		for (E element : collection) {
@@ -172,18 +172,18 @@ public class MyArrayList<E> extends AbstractMyList<E> implements RandomAccess {
 	}
 
 	/**
-	 * Devuelve una lista con los mismos elementos en orden inverso.
-	 *
-	 * <p><strong>Desviación consciente respecto al JDK</strong>: {@code java.util.List.reversed()}
-	 * devuelve una <em>vista</em> en la que las mutaciones se escriben en la lista original;
-	 * aquí se devuelve una <em>copia</em>. El motivo es que {@code java.util.Deque.reversed()}
-	 * (que {@link MyLinkedList} necesita por implementar {@code Deque}) tiene la misma firma con
-	 * otro tipo de retorno, y una vista invertida coherente para ambas estructuras exigiría
-	 * duplicar toda la maquinaria de delegación. El comportamiento es idéntico en
-	 * {@code MyArrayList} y en {@code MyLinkedList}.</p>
-	 *
-	 * @return una lista nueva con los elementos en orden inverso
-	 */
+  * Devuelve una lista con los mismos elementos en orden inverso.
+  *
+  * <p><strong>Desviación consciente respecto al JDK</strong>: {@code java.util.List.reversed()}
+  * devuelve una <em>vista</em> en la que las mutaciones se escriben en la lista original;
+  * aquí se devuelve una <em>copia</em>. El motivo es que {@code java.util.Deque.reversed()}
+  * (que {@link MyLinkedList} necesita por implementar {@code Deque}) tiene la misma firma con
+  * otro tipo de retorno, y una vista invertida coherente para ambas estructuras exigiría
+  * duplicar toda la maquinaria de delegación. El comportamiento es idéntico en
+  * {@code MyArrayList} y en {@code MyLinkedList}.</p>
+  *
+  * @return una lista nueva con los elementos en orden inverso
+  */
 	@Override
 	public MyArrayList<E> reversed() {
 		MyArrayList<E> copy = new MyArrayList<>(size());
@@ -194,8 +194,8 @@ public class MyArrayList<E> extends AbstractMyList<E> implements RandomAccess {
 	}
 
 	/**
-	 * @return la capacidad actual del array de almacenamiento
-	 */
+  * @return la capacidad actual del array de almacenamiento
+  */
 	int capacity() {
 		return elementData.length;
 	}

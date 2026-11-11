@@ -24,7 +24,7 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.exception.InvalidList
  *
  * // Recorrer todas las implementaciones
  * for (ListType cada : ListType.values()) {
- *     System.out.println(cada.create());   // [] y []
+ * System.out.println(cada.create());   // [] y []
  * }
  * }</pre>
  */
@@ -32,7 +32,7 @@ public enum ListType {
 
 	/** Lista respaldada por un array redimensionable. */
 	ARRAY_LIST {
-		@Override
+	@Override
 		public <E> MyList<E> create() {
 			return new MyArrayList<>();
 		}
@@ -40,29 +40,29 @@ public enum ListType {
 
 	/** Lista respaldada por una cadena de nodos doblemente enlazados. */
 	LINKED_LIST {
-		@Override
+	@Override
 		public <E> MyList<E> create() {
 			return new MyLinkedList<>();
 		}
 	};
 
 	/**
-	 * Crea una lista nueva y vacía de esta implementación.
-	 *
-	 * @param <E> tipo de los elementos
-	 * @return una lista vacía
-	 */
+  * Crea una lista nueva y vacía de esta implementación.
+  *
+  * @param <E> tipo de los elementos
+  * @return una lista vacía
+  */
 	public abstract <E> MyList<E> create();
 
 	/**
-	 * Interpreta el texto de la URL como un tipo de lista. Acepta, sin distinguir mayúsculas,
-	 * guiones y guiones bajos: {@code arraylist}, {@code array-list}, {@code array_list},
-	 * {@code linkedlist}, {@code linked-list}...
-	 *
-	 * @param raw texto recibido
-	 * @return el tipo correspondiente
-	 * @throws InvalidListTypeException si el texto no corresponde a ninguna implementación
-	 */
+  * Interpreta el texto de la URL como un tipo de lista. Acepta, sin distinguir mayúsculas,
+  * guiones y guiones bajos: {@code arraylist}, {@code array-list}, {@code array_list},
+  * {@code linkedlist}, {@code linked-list}...
+  *
+  * @param raw texto recibido
+  * @return el tipo correspondiente
+  * @throws InvalidListTypeException si el texto no corresponde a ninguna implementación
+  */
 	public static ListType parse(String raw) {
 		String normalized = normalize(raw);
 		for (ListType type : values()) {
@@ -74,10 +74,10 @@ public enum ListType {
 	}
 
 	/**
-	 * Los nombres de los tipos soportados, separados por comas.
+  * Los nombres de los tipos soportados, separados por comas.
   *
-	 * @return los nombres de los tipos soportados, separados por comas
-	 */
+  * @return los nombres de los tipos soportados, separados por comas
+  */
 	public static String supportedTypes() {
 		StringBuilder sb = new StringBuilder();
 		for (ListType type : values()) {

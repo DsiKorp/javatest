@@ -49,8 +49,8 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.exception.ListNotFoun
 public class ListService {
 
 	/**
-	 * Crea el servicio con el registro de listas vacío.
-	 */
+  * Crea el servicio con el registro de listas vacío.
+  */
 	public ListService() {
 	}
 
@@ -61,12 +61,12 @@ public class ListService {
 	private final Map<String, StoredList> lists = new ConcurrentHashMap<>();
 
 	/**
-	 * Crea una lista nueva con los valores indicados.
-	 *
-	 * @param type implementación a utilizar
-	 * @param values valores iniciales; {@code null} equivale a una lista vacía
-	 * @return el estado de la lista recién creada
-	 */
+  * Crea una lista nueva con los valores indicados.
+  *
+  * @param type implementación a utilizar
+  * @param values valores iniciales; {@code null} equivale a una lista vacía
+  * @return el estado de la lista recién creada
+  */
 	public ListResponse create(ListType type, List<Object> values) {
 		MyList<Object> list = type.create();
 		if (values != null) {
@@ -80,11 +80,11 @@ public class ListService {
 	}
 
 	/**
-	 * Devuelve el resumen de las listas registradas.
-	 *
-	 * @param type filtro opcional por implementación
-	 * @return el resumen de todas las listas registradas
-	 */
+  * Devuelve el resumen de las listas registradas.
+  *
+  * @param type filtro opcional por implementación
+  * @return el resumen de todas las listas registradas
+  */
 	public List<ListSummary> findAll(ListType type) {
 		List<ListSummary> summaries = new ArrayList<>();
 		for (Map.Entry<String, StoredList> entry : lists.entrySet()) {
@@ -97,38 +97,38 @@ public class ListService {
 	}
 
 	/**
-	 * Devuelve el estado actual de una lista.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @return el estado de la lista
-	 * @throws ListNotFoundException si no existe esa lista
-	 */
+  * Devuelve el estado actual de una lista.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @return el estado de la lista
+  * @throws ListNotFoundException si no existe esa lista
+  */
 	public ListResponse find(ListType type, String id) {
 		StoredList stored = require(type, id);
 		return toResponse(id, stored.type(), stored.list());
 	}
 
 	/**
-	 * Elimina una lista del registro en memoria.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @throws ListNotFoundException si no existe esa lista
-	 */
+  * Elimina una lista del registro en memoria.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @throws ListNotFoundException si no existe esa lista
+  */
 	public void delete(ListType type, String id) {
 		require(type, id);
 		lists.remove(id);
 	}
 
 	/**
-	 * Añade un elemento al final de la lista.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param value valor a añadir
-	 * @return el estado de la lista tras la operación
-	 */
+  * Añade un elemento al final de la lista.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param value valor a añadir
+  * @return el estado de la lista tras la operación
+  */
 	public ListResponse add(ListType type, String id, Object value) {
 		StoredList stored = require(type, id);
 		stored.list().add(value);
@@ -136,14 +136,14 @@ public class ListService {
 	}
 
 	/**
-	 * Añade un elemento en la posición indicada.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param index posición de inserción
-	 * @param value valor a añadir
-	 * @return el estado de la lista tras la operación
-	 */
+  * Añade un elemento en la posición indicada.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param index posición de inserción
+  * @param value valor a añadir
+  * @return el estado de la lista tras la operación
+  */
 	public ListResponse addAt(ListType type, String id, int index, Object value) {
 		StoredList stored = require(type, id);
 		stored.list().add(index, value);
@@ -151,14 +151,14 @@ public class ListService {
 	}
 
 	/**
-	 * Reemplaza el valor de la posición indicada.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param index posición a reemplazar
-	 * @param value nuevo valor
-	 * @return el estado de la lista tras la operación
-	 */
+  * Reemplaza el valor de la posición indicada.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param index posición a reemplazar
+  * @param value nuevo valor
+  * @return el estado de la lista tras la operación
+  */
 	public ListResponse set(ListType type, String id, int index, Object value) {
 		StoredList stored = require(type, id);
 		stored.list().set(index, value);
@@ -166,13 +166,13 @@ public class ListService {
 	}
 
 	/**
-	 * Elimina el elemento de la posición indicada.
-	 *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param index posición a eliminar
-	 * @return el estado de la lista tras la operación
-	 */
+  * Elimina el elemento de la posición indicada.
+  *
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param index posición a eliminar
+  * @return el estado de la lista tras la operación
+  */
 	public ListResponse removeAt(ListType type, String id, int index) {
 		StoredList stored = require(type, id);
 		stored.list().remove(index);
@@ -180,26 +180,26 @@ public class ListService {
 	}
 
 	/**
-	 * Consulta el valor almacenado en una posición.
+  * Consulta el valor almacenado en una posición.
   *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param index posición consultada
-	 * @return el valor almacenado en esa posición
-	 */
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param index posición consultada
+  * @return el valor almacenado en esa posición
+  */
 	public ElementResponse getElement(ListType type, String id, int index) {
 		StoredList stored = require(type, id);
 		return new ElementResponse(stored.list().get(index));
 	}
 
 	/**
-	 * Busca la primera aparición de un valor.
+  * Busca la primera aparición de un valor.
   *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param value valor buscado
-	 * @return la posición de la primera aparición y si se ha encontrado
-	 */
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param value valor buscado
+  * @return la posición de la primera aparición y si se ha encontrado
+  */
 	public IndexOfResponse indexOf(ListType type, String id, Object value) {
 		StoredList stored = require(type, id);
 		int index = stored.list().indexOf(value);
@@ -207,13 +207,13 @@ public class ListService {
 	}
 
 	/**
-	 * Comprueba si un valor está presente en la lista.
+  * Comprueba si un valor está presente en la lista.
   *
-	 * @param type implementación esperada
-	 * @param id identificador de la lista
-	 * @param value valor buscado
-	 * @return si el valor está presente en la lista
-	 */
+  * @param type implementación esperada
+  * @param id identificador de la lista
+  * @param value valor buscado
+  * @return si el valor está presente en la lista
+  */
 	public ContainsResponse contains(ListType type, String id, Object value) {
 		StoredList stored = require(type, id);
 		return new ContainsResponse(stored.list().contains(value));

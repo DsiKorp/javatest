@@ -1,0 +1,880 @@
+<title>Anatomía de ArrayList y LinkedList</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Paleta: plano técnico de ingeniería — neutrals fríos con sesgo azul, un azul de señal
+   para "estructura", verde para "permitido/pasa", ámbar para "prohibido/desviación". */
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --surface-2: #eef1f7;
+  --fg: #151922;
+  --muted: #59616f;
+  --line: #dbe0ea;
+  --line-strong: #b9c2d4;
+  --accent: #1b4fd8;
+  --accent-soft: #e6ecfd;
+  --accent-line: #b9c9f7;
+  --ok: #0d6f47;
+  --ok-soft: #e0f3ea;
+  --warn: #9c3d0c;
+  --warn-soft: #fceee5;
+  --code-bg: #10151e;
+  --code-fg: #dbe3f0;
+  --code-key: #8fb8ff;
+  --code-str: #9ad9a8;
+  --code-com: #7b879b;
+  --radius: 10px;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1017;
+    --surface: #151b25;
+    --surface-2: #1c2430;
+    --fg: #e7ebf2;
+    --muted: #97a1b3;
+    --line: #26303d;
+    --line-strong: #3a4757;
+    --accent: #85a9ff;
+    --accent-soft: #172441;
+    --accent-line: #2c4272;
+    --ok: #57d09c;
+    --ok-soft: #10281e;
+    --warn: #ff9d6b;
+    --warn-soft: #2b1a11;
+    --code-bg: #0a0e15;
+    --code-fg: #d7dfec;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0c1017;
+  --surface: #151b25;
+  --surface-2: #1c2430;
+  --fg: #e7ebf2;
+  --muted: #97a1b3;
+  --line: #26303d;
+  --line-strong: #3a4757;
+  --accent: #85a9ff;
+  --accent-soft: #172441;
+  --accent-line: #2c4272;
+  --ok: #57d09c;
+  --ok-soft: #10281e;
+  --warn: #ff9d6b;
+  --warn-soft: #2b1a11;
+  --code-bg: #0a0e15;
+  --code-fg: #d7dfec;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+
+.wrap { max-width: 1180px; margin: 0 auto; }
+
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.9rem, 5vw, 2.9rem); line-height: 1.1; margin: 0 0 .4em; }
+h2 { font-size: clamp(1.35rem, 3.2vw, 1.75rem); line-height: 1.2; margin: 0 0 .5em; }
+h3 { font-size: 1.1rem; margin: 2.2em 0 .5em; }
+p { margin: 0 0 1em; max-width: 68ch; }
+a { color: var(--accent); }
+
+/* ---------- cabecera ---------- */
+header.hero { padding: 3.5rem 0 2rem; border-bottom: 1px solid var(--line); margin-bottom: 2.5rem; }
+.eyebrow {
+  font-family: var(--mono); font-size: .74rem; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--accent); margin: 0 0 1rem;
+}
+.lede { font-size: 1.1rem; color: var(--muted); max-width: 60ch; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.75rem;
+  font-family: var(--mono); font-size: .78rem;
+}
+.chip {
+  border: 1px solid var(--line); background: var(--surface);
+  border-radius: 999px; padding: .3rem .75rem; color: var(--muted);
+  white-space: nowrap;
+}
+.chip.ok { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 3rem; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+nav.toc { position: sticky; top: 0; padding-bottom: 2rem; }
+@media (max-width: 900px) {
+  nav.toc {
+    position: static; margin: 0 -16px 2.5rem; padding: 1rem 16px;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto; white-space: nowrap;
+  }
+  nav.toc ol { display: flex; gap: 1.25rem; padding-left: 1.1rem; }
+  nav.toc .toc-sub { display: none; }
+}
+nav.toc h2 { font-family: var(--mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin-bottom: .9rem; }
+nav.toc ol { list-style: none; padding-left: 1.1rem; margin: 0; }
+nav.toc li { margin-bottom: .5rem; font-size: .92rem; }
+nav.toc a { color: var(--fg); text-decoration: none; border-bottom: 1px solid transparent; }
+nav.toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+nav.toc ol > li { color: var(--muted); font-size: .78rem; margin-bottom: 1.1rem; }
+nav.toc ol > li > a { color: var(--muted); font-weight: 600; }
+.toc-num { font-family: var(--mono); color: var(--accent); margin-right: .45rem; font-size: .8rem; }
+
+/* ---------- bloques ---------- */
+section { margin-bottom: 3.5rem; scroll-margin-top: 1rem; }
+.sec-head { border-top: 2px solid var(--fg); padding-top: 1.1rem; margin-bottom: 1.5rem; }
+.sec-num { font-family: var(--mono); font-size: .78rem; color: var(--accent); display: block; margin-bottom: .35rem; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.4rem 1.5rem; margin: 1.5rem 0; }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+
+.callout { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.2rem; margin: 1.5rem 0; }
+.callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.callout.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+.callout p { margin-bottom: .6rem; font-size: .95rem; }
+.callout p:last-child { margin-bottom: 0; }
+.callout .label {
+  font-family: var(--mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
+  display: block; margin-bottom: .4rem; color: var(--muted);
+}
+
+/* ---------- código ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-fg);
+  border-radius: var(--radius); padding: 1.1rem 1.2rem; margin: 1rem 0;
+  overflow-x: auto; font-family: var(--mono); font-size: .82rem; line-height: 1.6;
+  border: 1px solid var(--line);
+}
+pre code { font-family: inherit; }
+pre .k { color: var(--code-key); }
+pre .s { color: var(--code-str); }
+pre .c { color: var(--code-com); font-style: italic; }
+code.inline {
+  font-family: var(--mono); font-size: .87em; background: var(--surface-2);
+  padding: .12em .38em; border-radius: 4px; border: 1px solid var(--line);
+}
+
+.filepath { font-family: var(--mono); font-size: .78rem; color: var(--muted); margin: 1.6rem 0 .2rem; }
+.filepath .ln { color: var(--accent); }
+
+/* ---------- tablas ---------- */
+.tbl-wrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: none; }
+td code, th code { font-family: var(--mono); font-size: .85em; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- jerarquía ---------- */
+.tree { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.6rem 1.4rem; overflow-x: auto; }
+.tree-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; flex-wrap: wrap; }
+.tree-box {
+  border: 1px solid var(--line-strong); background: var(--surface-2);
+  border-radius: 8px; padding: .5rem .85rem; font-family: var(--mono); font-size: .8rem; white-space: nowrap;
+}
+.tree-box.parent { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.tree-box.leaf { border-style: dashed; }
+.tree-box small { display: block; font-size: .68rem; color: var(--muted); font-weight: 400; letter-spacing: .02em; }
+.tree-stem { width: 1px; height: 1.4rem; background: var(--line-strong); margin-left: 1.1rem; }
+.tree-kids { display: flex; flex-wrap: wrap; gap: .6rem; padding-left: 2.3rem; position: relative; }
+.tree-kids::before { content: ""; position: absolute; left: 1.1rem; top: 0; height: 1.2rem; width: 1px; background: var(--line-strong); }
+.tree-kids > .tree-box { position: relative; }
+.tree-kids > .tree-box::before { content: ""; position: absolute; left: -1.2rem; top: 50%; width: 1.2rem; height: 1px; background: var(--line-strong); }
+
+/* ---------- pasos ---------- */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 1.5rem 0; }
+.steps > li {
+  counter-increment: step; position: relative; padding: 0 0 1.5rem 3.2rem;
+  border-left: 1px solid var(--line); margin-left: .85rem;
+}
+.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.steps > li::before {
+  content: counter(step); position: absolute; left: -1.05rem; top: -.15rem;
+  width: 2.1rem; height: 2.1rem; border-radius: 50%;
+  background: var(--accent); color: #fff; display: grid; place-items: center;
+  font-family: var(--mono); font-size: .85rem; font-weight: 500;
+}
+.steps h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+.steps p { margin-bottom: .5rem; font-size: .95rem; color: var(--muted); }
+.steps .tag { font-family: var(--mono); font-size: .74rem; color: var(--accent); }
+
+.q { font-weight: 600; }
+.q-a { color: var(--muted); font-size: .95rem; }
+ul.tight { margin: .4rem 0 0; padding-left: 1.2rem; }
+ul.tight li { margin-bottom: .35rem; font-size: .95rem; }
+
+footer { border-top: 1px solid var(--line); margin-top: 4rem; padding: 2rem 0 3rem; color: var(--muted); font-size: .88rem; }
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <p class="eyebrow">Guía de lectura del código · Punto 1</p>
+  <p style="font-size:.9rem;color:var(--muted);margin:-.5rem 0 1rem">Profundización del punto 1 del examen. Para el índice general de los dos módulos, <a href="guia.html">abre la guía completa</a>.</p>
+  <h1>Anatomía de ArrayList y LinkedList</h1>
+  <p class="lede">
+    Dos estructuras de datos implementadas desde cero, sin apoyarse en las colecciones de
+    <code class="inline">java.util</code>, con una API HTTP para poder verificar el comportamiento
+    sin leer el código. Esta página sirve para entenderlo: qué hace cada clase, por qué está así
+    y qué te van a preguntar en la entrevista.
+  </p>
+  <div class="hero-meta">
+    <span class="chip">Java 25</span>
+    <span class="chip">Spring Boot 4.1.2</span>
+    <span class="chip">Punto 1 del examen</span>
+    <span class="chip ok">87 tests en verde</span>
+    <span class="chip ok">52/52 comprobaciones</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#mapa"><span class="toc-num">01</span>El mapa mental</a></li>
+    <li><a href="#orden"><span class="toc-num">02</span>Por dónde empezar</a></li>
+    <li><a href="#clases"><span class="toc-num">03</span>Clase por clase</a>
+      <ol class="toc-sub">
+        <li><a href="#c-mylist">MyList</a></li>
+        <li><a href="#c-abstract">AbstractMyList</a></li>
+        <li><a href="#c-arraylist">MyArrayList</a></li>
+        <li><a href="#c-linkedlist">MyLinkedList</a></li>
+        <li><a href="#c-iterator">MyListIterator</a></li>
+        <li><a href="#c-sublist">MySubList</a></li>
+        <li><a href="#c-listtype">ListType</a></li>
+      </ol>
+    </li>
+    <li><a href="#decisiones"><span class="toc-num">04</span>Las decisiones que se preguntan</a></li>
+    <li><a href="#suite"><span class="toc-num">05</span>La suite de 52 comprobaciones</a></li>
+    <li><a href="#web"><span class="toc-num">06</span>La capa web</a></li>
+    <li><a href="#defender"><span class="toc-num">07</span>Defenderlo en 60 segundos</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="mapa">
+  <div class="sec-head">
+    <span class="sec-num">01 — El mapa mental</span>
+    <h2>Dos estructuras, una familia</h2>
+  </div>
+
+  <p>
+    Lo primero que hay que entender es que <strong>no hay dos implementaciones sueltas</strong>. Hay
+    una familia: una clase abstracta con todos los algoritmos de lista escritos <em>una sola vez</em>,
+    y dos subclases que sólo aportan la parte que depende de cómo se guarda el dato.
+  </p>
+
+  <p>
+    Es exactamente el reparto que hace el JDK con <code class="inline">AbstractList</code> →
+    <code class="inline">ArrayList</code> / <code class="inline">LinkedList</code>. Copiar ese diseño
+    no es trampa: es la respuesta correcta a «implementa una lista desde cero», porque demuestra que
+    entiendes por qué el JDK lo tiene así y no es sólo que sabes escribir un array.
+  </p>
+
+  <div class="tree">
+    <div class="tree-row">
+      <div class="tree-box parent">MyList&lt;E&gt;<small>interface · extends java.util.List&lt;E&gt;</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box parent">AbstractMyList&lt;E&gt;<small>abstract · 444 líneas · todo el trabajo común</small></div>
+    </div>
+    <div class="tree-stem"></div>
+    <div class="tree-kids">
+      <div class="tree-box leaf">MyArrayList&lt;E&gt;<small>Object[] · RandomAccess · 203 líneas</small></div>
+      <div class="tree-box leaf">MyLinkedList&lt;E&gt;<small>Node prev/next · Deque · 461 líneas</small></div>
+      <div class="tree-box leaf">MySubList&lt;E&gt;<small>vista que delega en la raíz · 119 líneas</small></div>
+    </div>
+  </div>
+
+  <div class="callout ok">
+    <span class="label">La regla del paquete</span>
+    <p>
+      Ninguna clase de <code class="inline">collections/</code> puede usar
+      <code class="inline">java.util.ArrayList</code>, <code class="inline">LinkedList</code>,
+      <code class="inline">Collections</code>, <code class="inline">Arrays</code> ni
+      <code class="inline">HashMap</code> para resolver su comportamiento.
+    </p>
+    <p>
+      Lo que <strong>sí</strong> se permite son las <em>interfaces</em> del JDK
+      (<code class="inline">List</code>, <code class="inline">Iterator</code>,
+      <code class="inline">ListIterator</code>, <code class="inline">Deque</code>,
+      <code class="inline">Comparator</code>, <code class="inline">RandomAccess</code>), las
+      excepciones (<code class="inline">NoSuchElementException</code>,
+      <code class="inline">IndexOutOfBoundsException</code>,
+      <code class="inline">ConcurrentModificationException</code>) y un puñado de utilidades de
+      soporte (<code class="inline">Objects</code>, <code class="inline">System.arraycopy</code>,
+      <code class="inline">java.lang.reflect.Array</code>).
+    </p>
+    <p>
+      Implementar las interfaces del JDK está permitido: lo que no se permite es delegar en sus
+      implementaciones. Esa distinción es el centro de la prueba.
+    </p>
+  </div>
+</section>
+
+<section id="orden">
+  <div class="sec-head">
+    <span class="sec-num">02 — Por dónde empezar</span>
+    <h2>El orden de lectura</h2>
+  </div>
+
+  <p>
+    Si lees los ficheros por orden alfabético te vas a perder: empezarías por
+    <code class="inline">AbstractMyList</code>, que es la clase más larga y la que menos se
+    entiende sin contexto. Llévalos en este orden, y en cada uno tienes una pregunta concreta que
+    responder.
+  </p>
+
+  <ol class="steps">
+    <li>
+      <h3>Lee el contrato de <code class="inline">AbstractMyList</code></h3>
+      <span class="tag">collections/AbstractMyList.java:60-95</span>
+      <p>
+        Las seis primitivas abstractas. Si entiendes esto, entiendes el 80% del diseño: todo lo
+        demás en esa clase está construido sobre estas seis.
+      </p>
+    </li>
+    <li>
+      <h3>Lee <code class="inline">MyArrayList</code> completa</h3>
+      <span class="tag">collections/MyArrayList.java</span>
+      <p>
+        203 líneas y sólo seis métodos propios. Es la clase más fácil y la que te da la intuición
+        de cómo se implementa una lista sobre un array.
+      </p>
+    </li>
+    <li>
+      <h3>Lee <code class="inline">MyLinkedList</code>, empezando por <code class="inline">Node</code> y los tres <code class="inline">link*</code></h3>
+      <span class="tag">collections/MyLinkedList.java:30-42, 385-461</span>
+      <p>
+        Los helpers <code class="inline">linkFirst</code>, <code class="inline">linkLast</code> y
+        <code class="inline">linkAfter</code> son el corazón de la estructura. Una vez que los
+        entiendes, el resto son llamadas a esos tres.
+      </p>
+    </li>
+    <li>
+      <h3>Ahora sí, el resto de <code class="inline">AbstractMyList</code></h3>
+      <span class="tag">collections/AbstractMyList.java:101-444</span>
+      <p>
+        Los algoritmos comunes. Fíjate en <code class="inline">equals</code>, en
+        <code class="inline">hashCode</code> y en <code class="inline">sort</code>: son las tres
+        decisiones que se preguntan en la entrevista.
+      </p>
+    </li>
+    <li>
+      <h3><code class="inline">MyListIterator</code>: el iterador fail-fast</h3>
+      <span class="tag">collections/MyListIterator.java</span>
+      <p>
+        122 líneas, muy legible. Es donde se ve el <code class="inline">modCount</code> en acción.
+      </p>
+    </li>
+    <li>
+      <h3><code class="inline">MySubList</code>: la vista</h3>
+      <span class="tag">collections/MySubList.java</span>
+      <p>
+        Corta y muy ilustrativa: enseña cómo se construye una vista que no copia nada.
+      </p>
+    </li>
+    <li>
+      <h3>Por último, la capa web</h3>
+      <span class="tag">web/ · service/ · verification/</span>
+      <p>
+        Ya la entiendes: es una capa fina sobre las colecciones. Pero <code class="inline">verification/</code>
+        merece atención, porque es la que demuestra que el contrato se cumple.
+      </p>
+    </li>
+  </ol>
+</section>
+
+<section id="clases">
+  <div class="sec-head">
+    <span class="sec-num">03 — Clase por clase</span>
+    <h2>Qué hace cada una</h2>
+  </div>
+
+  <h3 id="c-mylist">MyList&lt;E&gt; — el marcador</h3>
+  <p class="filepath">collections/MyList.java</p>
+  <pre><code><span class="c">// 10 líneas. No añade un solo método.</span>
+<span class="k">public interface</span> MyList&lt;E&gt; <span class="k">extends</span> List&lt;E&gt; {
+}</code></pre>
+  <p>
+    Existe por una razón práctica: que las firmas del servicio y de los DTOs digan «esto es una
+    lista propia» y no «esto es un <code class="inline">java.util.List</code> cualquiera». No aporta
+    comportamiento, pero hace la intención explícita en todo el código de arriba.
+  </p>
+
+  <h3 id="c-abstract">AbstractMyList&lt;E&gt; — el trabajo común</h3>
+  <p class="filepath">collections/AbstractMyList.java · 444 líneas</p>
+  <p>
+    Es la clase importante. Contiene <strong>todos</strong> los algoritmos de lista que no dependen
+    de cómo se almacena el dato, escritos una sola vez. Es lo que hace que dos implementaciones
+    distintos no diverjan nunca.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Las 6 primitivas abstractas</th><th>Por qué las necesita</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>size()</code></td><td>Cuántos elementos hay</td></tr>
+        <tr><td><code>get(int)</code></td><td>Leer una posición</td></tr>
+        <tr><td><code>set(int, E)</code></td><td>Reemplazar una posición</td></tr>
+        <tr><td><code>add(int, E)</code></td><td>Insertar en una posición</td></tr>
+        <tr><td><code>remove(int)</code></td><td>Quitar por posición</td></tr>
+        <tr><td><code>listIterator(int)</code></td><td>El iterador, que es distinto en cada estructura</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Con esas seis se construye todo lo demás. Por ejemplo, <code class="inline">indexOf</code> no
+    necesita saber cómo se guarda el dato:
+  </p>
+  <pre><code><span class="k">public int</span> indexOf(Object o) {
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; size(); i++) {
+        <span class="k">if</span> (Objects.equals(o, get(i))) {
+            <span class="k">return</span> i;
+        }
+    }
+    <span class="k">return</span> -1;
+}</code></pre>
+
+  <p>
+    Y así <code class="inline">clear()</code>, <code class="inline">addAll()</code>,
+    <code class="inline">removeAll()</code>, <code class="inline">retainAll()</code>,
+    <code class="inline">toArray()</code>, <code class="inline">toString()</code> o
+    <code class="inline">sort()</code> salen de aquí gratis para las dos estructuras.
+  </p>
+
+  <h3 id="c-arraylist">MyArrayList&lt;E&gt; — sobre un array</h3>
+  <p class="filepath">collections/MyArrayList.java · 203 líneas</p>
+  <p>
+    Sólo tres campos: el array de almacenamiento, el número de elementos ocupados y el contador de
+    modificaciones. Todo lo demás son las seis primitivas.
+  </p>
+  <pre><code><span class="k">private</span> Object[] elementData;   <span class="c">// array crudo: los genéricos no caben en un array</span>
+<span class="k">private</span> <span class="k">int</span> size;
+<span class="k">private</span> <span class="k">int</span> modCount;       <span class="c">// lo lleva AbstractMyList</span></code></pre>
+
+  <p>
+    La inserción en medio es un desplazamiento de bloque con <code class="inline">System.arraycopy</code>,
+    que es código nativo y por eso es mucho más rápido que un bucle:
+  </p>
+  <pre><code><span class="k">public void</span> add(<span class="k">int</span> index, E element) {
+    checkPositionIndex(index);
+    ensureCapacity(size + 1);
+    <span class="k">int</span> moved = size - index;
+    <span class="k">if</span> (moved &gt; 0) {
+        System.arraycopy(elementData, index, elementData, index + 1, moved);
+    }
+    elementData[index] = element;
+    size++;
+    modCount++;
+}</code></pre>
+
+  <p>Y el crecimiento de la capacidad, ×1.5 como en el JDK:</p>
+  <pre><code><span class="k">private void</span> grow(<span class="k">int</span> minCapacity) {
+    <span class="k">int</span> oldCapacity = elementData.length;
+    <span class="c">// Crecimiento ×1.5, el mismo que usa java.util.ArrayList.</span>
+    <span class="k">int</span> newCapacity = Math.max(oldCapacity + (oldCapacity &gt;&gt; 1), minCapacity);
+    <span class="k">if</span> (newCapacity == 0) { newCapacity = 1; }
+    Object[] grown = <span class="k">new</span> Object[newCapacity];
+    System.arraycopy(elementData, 0, grown, 0, size);
+    elementData = grown;
+}</code></pre>
+
+  <div class="callout">
+    <span class="label">Detalle que suma puntos</span>
+    <p>
+      <code class="inline">oldCapacity &gt;&gt; 1</code> es la división por dos sin signo, y
+      <code class="inline">Math.max</code> garantiza que la nueva capacidad nunca sea menor que la
+      que hace falta. Si la capacidad llega a cero, el <code class="inline">newCapacity == 0</code>
+      la rescata: sin eso, <code class="inline">grow</code> crearía un array de tamaño 0 y
+      <code class="inline">add</code> entraría en bucle infinito.
+    </p>
+  </div>
+
+  <h3 id="c-linkedlist">MyLinkedList&lt;E&gt; — sobre nodos</h3>
+  <p class="filepath">collections/MyLinkedList.java · 461 líneas</p>
+  <p>El nodo, con sus dos vecinos:</p>
+  <pre><code><span class="k">private static final class</span> Node&lt;E&gt; {
+    <span class="k">private</span> E element;
+    <span class="k">private</span> Node&lt;E&gt; next;
+    <span class="k">private</span> Node&lt;E&gt; prev;
+}</code></pre>
+
+  <p>
+    La diferencia con <code class="inline">MyArrayList</code> está en <strong>qué significa
+    insertar</strong>. En el array hay que mover media lista; aquí hay que rehacer dos enlaces.
+  </p>
+  <pre><code><span class="k">private void</span> linkLast(E element) {
+    Node&lt;E&gt; created = <span class="k">new</span> Node&lt;&gt;(element);
+    <span class="k">if</span> (last == <span class="k">null</span>) {
+        first = created;         <span class="c">// la lista estaba vacía</span>
+        last = created;
+    }
+    <span class="k">else</span> {
+        created.prev = last;
+        last.next = created;
+        last = created;
+    }
+}</code></pre>
+
+  <p>
+    Y la optimización que hace que <code class="inline">get(i)</code> no sea siempre igual de
+    lento: se camina desde el extremo más cercano.
+  </p>
+  <pre><code><span class="k">private</span> Node&lt;E&gt; node(<span class="k">int</span> index) {
+    checkIndex(index);
+    Node&lt;E&gt; current;
+    <span class="k">if</span> (index &lt; (size &gt;&gt; 1)) {        <span class="c">// primera mitad: desde first</span>
+        current = first;
+        <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; index; i++) { current = current.next; }
+    }
+    <span class="k">else</span> {                                   <span class="c">// segunda mitad: desde last</span>
+        current = last;
+        <span class="k">for</span> (<span class="k">int</span> i = size - 1; i &gt; index; i--) { current = current.prev; }
+    }
+    <span class="k">return</span> current;
+}</code></pre>
+
+  <div class="callout">
+    <span class="label">La diferencia estructural que pide el enunciado</span>
+    <p>
+      <code class="inline">MyLinkedList</code> implementa <code class="inline">java.util.Deque</code>
+      entero: <code class="inline">offer</code>/<code class="inline">poll</code> para usarlo como
+      cola FIFO, <code class="inline">push</code>/<code class="inline">pop</code> como pila LIFO,
+      <code class="inline">peekFirst</code>, <code class="inline">removeFirstOccurrence</code>…
+    </p>
+    <p>
+      El enunciado de la entrevista dice exactamente esto: «<code class="inline">LinkedList</code>
+      implementa <code class="inline">Deque</code>, así que puede usarse como una estructura
+      FIFO estándar». Es la diferencia real entre las dos estructuras, y tenerla implementada es lo
+      que separa una respuesta de principiante de una de senior.
+    </p>
+  </div>
+
+  <h3 id="c-iterator">MyListIterator&lt;E&gt; — el iterador fail-fast</h3>
+  <p class="filepath">collections/MyListIterator.java · 122 líneas</p>
+  <p>
+    Comparte implementación entre las dos estructuras, así que recibe la lista como
+    <code class="inline">AbstractMyList</code> y le pide lo que necesita. Tres campos:
+  </p>
+  <pre><code><span class="k">private</span> <span class="k">final</span> AbstractMyList&lt;E&gt; list;
+<span class="k">private</span> <span class="k">int</span> expectedModCount;  <span class="c">// la foto del contador cuando nací</span>
+<span class="k">private</span> <span class="k">int</span> cursor;             <span class="c">// la posición siguiente</span>
+<span class="k">private</span> <span class="k">int</span> lastRet = -1;       <span class="c">// lo último devuelto, o -1</span></code></pre>
+
+  <p>Y la comprobación que hace que el iterador sea fail-fast:</p>
+  <pre><code><span class="k">private void</span> checkForComodification() {
+    <span class="k">if</span> (list.modCount() != expectedModCount) {
+        <span class="k">throw new</span> ConcurrentModificationException();
+    }
+}</code></pre>
+
+  <div class="callout warn">
+    <span class="label">El matiz que se pregunta</span>
+    <p>
+      <code class="inline">iterator.remove()</code> y <code class="inline">iterator.add()</code>
+      <em>también</em> incrementan <code class="inline">modCount</code>, así que después de
+      mutar hay que actualizar <code class="inline">expectedModCount</code> a mano. Si no, el
+      iterador se detectaría a sí mismo como «modificación concurrente» y el
+      <code class="inline">remove()</code> normal del bucle reventaría.
+    </p>
+    <p>
+      Es un bug clásico al implementar iteradores, y está resuelto en
+      <code class="inline">remove()</code> y <code class="inline">add()</code> del iterador.
+    </p>
+  </div>
+
+  <h3 id="c-sublist">MySubList&lt;E&gt; — la vista</h3>
+  <p class="filepath">collections/MySubList.java · 119 líneas</p>
+  <p>
+    No copia nada. Guarda la lista raíz, el desplazamiento absoluto y el tamaño de la vista, y
+    delega. Por eso el anidamiento funciona sin casos especiales:
+  </p>
+  <pre><code><span class="k">public</span> E get(<span class="k">int</span> index) {
+    checkForComodification();
+    checkIndex(index);
+    <span class="k">return</span> root.get(offset + index);     <span class="c">// la raíz, desplazada</span>
+}
+
+<span class="k">public void</span> add(<span class="k">int</span> index, E element) {
+    checkForComodification();
+    checkPositionIndex(index);
+    root.add(offset + index, element);
+    size++;
+    expectedModCount = root.modCount();   <span class="c">// yo también he modificado la raíz</span>
+}</code></pre>
+
+  <h3 id="c-listtype">ListType — el catálogo</h3>
+  <p class="filepath">collections/ListType.java · 79 líneas</p>
+  <p>
+    Un enum con una fábrica por constante. Es lo que permite que el tipo de la lista vaya en la
+    URL sin que el controlador conozca las clases concretas:
+  </p>
+  <pre><code><span class="k">public enum</span> ListType {
+    ARRAY_LIST { <span class="k">public</span> &lt;E&gt; MyList&lt;E&gt; create() { <span class="k">return new</span> MyArrayList&lt;&gt;(); } },
+    LINKED_LIST { <span class="k">public</span> &lt;E&gt; MyList&lt;E&gt; create() { <span class="k">return new</span> MyLinkedList&lt;&gt;(); } };
+
+    <span class="k">public abstract</span> &lt;E&gt; MyList&lt;E&gt; create();
+}</code></pre>
+</section>
+
+<section id="decisiones">
+  <div class="sec-head">
+    <span class="sec-num">04 — Las decisiones que se preguntan</span>
+    <h2>Seis puntos donde se decide tu nota</h2>
+  </div>
+
+  <h3>1. <code class="inline">equals</code> cruza implementaciones</h3>
+  <p class="q">«¿Por qué tu <code class="inline">equals</code> no comprueba que la otra lista sea del mismo tipo?»</p>
+  <pre><code><span class="k">public boolean</span> equals(Object o) {
+    <span class="k">if</span> (o == <span class="k">this</span>) { <span class="k">return true</span>; }
+    <span class="k">if</span> (!(o <span class="k">instanceof</span> List&lt;?&gt; other)) { <span class="k">return false</span>; }
+    <span class="k">if</span> (other.size() != size()) { <span class="k">return false</span>; }
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; size(); i++) {
+        <span class="k">if</span> (!Objects.equals(get(i), other.get(i))) { <span class="k">return false</span>; }
+    }
+    <span class="k">return true</span>;
+}</code></pre>
+  <p class="q-a">
+    Porque en el JDK <code class="inline">new ArrayList&lt;&gt;(List.of(1,2)).equals(new LinkedList&lt;&gt;(List.of(1,2)))</code>
+    es <code class="inline">true</code>. Comparar contra cualquier <code class="inline">List</code>
+    replica ese comportamiento, y hace que una <code class="inline">MyArrayList</code> y una
+    <code class="inline">MyLinkedList</code> con los mismos elementos sean iguales entre sí.
+    Y como <code class="inline">hashCode</code> usa el algoritmo 31-based del JDK, dos listas
+    iguales producen el mismo hash aunque sean de implementaciones distintas.
+  </p>
+
+  <h3>2. <code class="inline">sort</code> propio</h3>
+  <p class="q">«¿Por qué no usas <code class="inline">Collections.sort</code>?»</p>
+  <p class="q-a">
+    Porque está prohibido por la regla del paquete. El <code class="inline">default</code> de
+    <code class="inline">List.sort</code> en el JDK delega en <code class="inline">Arrays.sort</code>,
+    así que también está prohibido. Lo que queda es escribir un merge sort propio, y de paso
+    estable.
+  </p>
+  <pre><code><span class="k">private static void</span> merge(Object[] source, Object[] buffer, <span class="k">int</span> low,
+        <span class="k">int</span> mid, <span class="k">int</span> high, Comparator&lt;?&gt; comparator) {
+    <span class="k">int</span> left = low, right = mid, target = low;
+    <span class="k">while</span> (left &lt; mid &amp;&amp; right &lt; high) {
+        <span class="c">// "&lt; 0" mantiene la estabilidad del merge sort.</span>
+        <span class="k">if</span> (cmp.compare(source[right], source[left]) &lt; 0) {
+            buffer[target++] = source[right++];
+        }
+        <span class="k">else</span> {
+            buffer[target++] = source[left++];
+        }
+    }
+    <span class="c">// ... se vacía el resto de los dos lados</span>
+}</code></pre>
+
+  <h3>3. Iteradores fail-fast</h3>
+  <p class="q">«¿Qué es <code class="inline">modCount</code>?»</p>
+  <p class="q-a">
+    Un contador de modificaciones estructurales. Cada mutación lo incrementa. El iterador guarda
+    una foto al crearse y, si al avanzar el contador ha cambiado, lanza
+    <code class="inline">ConcurrentModificationException</code>. Es una Best Effort: no garantiza
+    nada, avisa de que el resultado sería impredecible. Es exactamente lo que hace el JDK.
+  </p>
+
+  <h3>4. <code class="inline">subList</code> es una vista, no una copia</h3>
+  <p class="q">«¿Qué pasa si modifico la lista original mientras tengo una vista?»</p>
+  <p class="q-a">
+    La vista queda obsoleta y la siguiente operación lanza
+    <code class="inline">ConcurrentModificationException</code>. Es el mismo comportamiento que
+    <code class="inline">java.util.ArrayList.subList</code>. Lo que sí funciona es mutar
+    <em>a través</em> de la vista: el cambio se refleja en el padre, porque la vista delega en él.
+  </p>
+
+  <h3>5. La desviación de <code class="inline">reversed()</code></h3>
+  <p class="q">«¿Por qué <code class="inline">reversed()</code> devuelve una copia y no una vista como en el JDK?»</p>
+  <p class="q-a">
+    Porque desde Java 21 <code class="inline">java.util.List</code> declara
+    <code class="inline">default List&lt;E&gt; reversed()</code> y
+    <code class="inline">java.util.Deque</code> declara
+    <code class="inline">default Deque&lt;E&gt; reversed()</code>: mismo nombre, tipos de retorno
+    incompatibles. Como <code class="inline">MyLinkedList</code> implementa las dos interfaces, el
+    compilador no acepta el método por defecto de ninguna de las dos y hay que sobrescribirlo.
+  </p>
+  <p class="q-a">
+    Lo podría haber resuelto con una vista invertida completa, como hace el JDK, pero eso exige
+    duplicar la maquinaria de delegación. Devuelvo una copia invertida y el comportamiento es
+    idéntico en las dos implementaciones. Es una desviación consciente, documentada en el javadoc,
+    en el README y en el plan.
+  </p>
+
+  <h3>6. La lista vive en memoria</h3>
+  <p class="q">«¿Por qué <code class="inline">ConcurrentHashMap</code> y no una base de datos?»</p>
+  <p class="q-a">
+    Porque es una herramienta de demostración y entrevista, no un servicio de producción: lo
+    interesante es poder crear una lista, mutarla paso a paso y ver el resultado. Y
+    <code class="inline">ConcurrentHashMap</code> porque las peticiones HTTP llegan en paralelo.
+  </p>
+</section>
+
+<section id="suite">
+  <div class="sec-head">
+    <span class="sec-num">05 — La suite de verificación</span>
+    <h2>52 comprobaciones que se ejecutan por HTTP</h2>
+  </div>
+
+  <p>
+    Es la pieza que convierte el código en una prueba evaluable. Vive en
+    <code class="inline">verification/ListContractChecks.java</code> y se expone en
+    <code class="inline">POST /api/verify</code>. Devuelve un informe JSON, y nunca falla: recoge
+    el resultado de cada comprobación para que se vea exactamente qué pasa y qué no.
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Bloque</th><th>Cuántas</th><th>Sobre qué se ejecutan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Comunes</td><td class="num">23</td><td>Las dos implementaciones → <span class="num">46</span></td></tr>
+        <tr><td>Específicas de <code>Deque</code></td><td class="num">6</td><td>Sólo <code>MyLinkedList</code></td></tr>
+        <tr><td><strong>Total</strong></td><td class="num"><strong>52</strong></td><td><span class="num">46 + 6</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Cada comprobación es una lambda con nombre que recibe una lista vacía y la deja como necesite:</p>
+  <pre><code><span class="k">new</span> Check(<span class="s">"el iterador es fail-fast ante modificaciones concurrentes"</span>, (list, type) -&gt; {
+    list.addAll(List.of(<span class="s">"a"</span>, <span class="s">"b"</span>));
+    Iterator&lt;Object&gt; iterator = list.iterator();
+    iterator.next();
+    list.add(<span class="s">"c"</span>);
+    throwsException(ConcurrentModificationException.class, iterator::next,
+            <span class="s">"el iterador debe detectar la modificación concurrente"</span>);
+});</code></pre>
+
+  <div class="callout ok">
+    <span class="label">Por qué esto importa más que los unit tests</span>
+    <p>
+      Los unit tests son la red de seguridad interna. El endpoint es lo que le permite a quien
+      evalúa <strong>comprobar el comportamiento sin leer una línea de código</strong>, que es
+      justo lo que pedía el enunciado: «se puede exponer un endpoint para hacer la prueba».
+    </p>
+  </div>
+</section>
+
+<section id="web">
+  <div class="sec-head">
+    <span class="sec-num">06 — La capa web</span>
+    <h2>Del HTTP a la lista</h2>
+  </div>
+
+  <p>El camino de una petición es corto, y conviene poder recorrerlo de memoria:</p>
+  <pre><code>HTTP  →  web/MyListController  →  service/ListService  →  collections/MyList&lt;Object&gt;
+                                              ↓
+                                    registro ConcurrentHashMap&lt;String, StoredList&gt;</code></pre>
+
+  <p>
+    La decisión de diseño de la capa web es que <strong>el tipo de implementación va en la
+    URL</strong>:
+  </p>
+  <pre><code>POST   /api/lists/<span class="k">arraylist</span>      →  MyArrayList
+POST   /api/lists/<span class="k">linked-list</span>    →  MyLinkedList
+GET    /api/lists/<span class="k">arraylist</span>/<span class="s">{id}</span>/elements/0</code></pre>
+  <p class="q-a">
+    Para que quede explícito en la propia ruta qué estructura se está poniendo a prueba, que es
+    exactamente lo que el entrevistador quiere contrastar. Y por eso
+    <code class="inline">ListType.parse()</code> acepta <code class="inline">arraylist</code>,
+    <code class="inline">array-list</code> y <code class="inline">array_list</code> sin distinguir
+    mayúsculas.
+  </p>
+
+  <p>
+    <code class="inline">index-of</code> y <code class="inline">contains</code> son
+    <code class="inline">POST</code> con cuerpo JSON y no <code class="inline">GET</code> con query
+    param por una razón concreta: un query param siempre es texto, y para comparar con
+    <code class="inline">equals</code> haría falta coercionar <code class="inline">"1"</code> a
+    entero. Con JSON decide Jackson y la comparación es exacta.
+  </p>
+</section>
+
+<section id="defender">
+  <div class="sec-head">
+    <span class="sec-num">07 — Defendiéndolo</span>
+    <h2>En 60 segundos</h2>
+  </div>
+
+  <p>Si te dejan un minuto para presentarlo, este es el guion:</p>
+  <ol class="steps">
+    <li>
+      <h3>«Dos implementaciones, una familia»</h3>
+      <p>
+        <code class="inline">AbstractMyList</code> implementa una sola vez todo lo que depende de
+        <code class="inline">get</code>/<code class="inline">set</code>/<code class="inline">add</code>/<code class="inline">remove</code>;
+        cada subclase sólo aporta seis primitivas. Igual que <code class="inline">AbstractList</code>
+        en el JDK.
+      </p>
+    </li>
+    <li>
+      <h3>«El array es contiguo; la lista enlazada, no»</h3>
+      <p>
+        Acceso O(1) frente a O(n); inserción O(n) con desplazamiento frente a O(1) en los extremos.
+        Y <code class="inline">MyLinkedList</code> añade <code class="inline">Deque</code>: cola y
+        pila.
+      </p>
+    </li>
+    <li>
+      <h3>«El contrato se cumple igual en las dos»</h3>
+      <p>
+        <code class="inline">equals</code> cruza implementaciones, los iteradores son fail-fast y
+        <code class="inline">subList</code> es una vista. Todo eso está en la base, una vez.
+      </p>
+    </li>
+    <li>
+      <h3>«Y está demostrado, no afirmado»</h3>
+      <p>
+        52 comprobaciones por HTTP, 84 tests, y un test diferencial que compara el
+        comportamiento propio contra el del JDK tras cada una de 500 operaciones aleatorias.
+      </p>
+    </li>
+  </ol>
+
+  <div class="callout warn">
+    <span class="label">Si te preguntan por lo que no hiciste</span>
+    <p>
+      Menciona tú primero la desviación de <code class="inline">reversed()</code> y el que
+      <code class="inline">subList</code> lanza <code class="inline">ConcurrentModificationException</code>
+      ante cambios externos. Un candidato que conoce sus límites puntos de entrada mucho mejor que
+      uno que presume de que todo está perfecto.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>
+    Esta página describe el código del módulo <code class="inline">collections/</code> y su capa
+    web. Para los comandos exactos de arranque y las llamadas <code class="inline">curl</code>,
+    ver el <code class="inline">README.md</code> del repositorio.
+  </p>
+</footer>
+
+</main>
+</div>
+</div>

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.dto.VerificationReport;
+import com.dsikorp.epam.javatest.common.verification.VerificationReport;
 import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.service.VerificationService;
 
 /**
@@ -22,7 +22,7 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.service.VerificationS
  * <pre>{@code
  * # Resumen del informe
  * curl -X POST http://localhost:8080/api/q1/verify \
- *      | jq '{total, passed, failed, durationMs}'
+ * | jq '{total, passed, failed, durationMs}'
  * # → { "total": 52, "passed": 52, "failed": 0, "durationMs": 15 }
  *
  * # Sólo las comprobaciones fallidas (vacío si todo va bien)
@@ -30,40 +30,40 @@ import com.dsikorp.epam.javatest.q01.arraylistvslinkedlist.service.VerificationS
  *
  * # El detalle completo, agrupado por implementación
  * curl http://localhost:8080/api/q1/verify \
- *      | jq -r '.checks[] | "\(.implementation) | \(.passed) | \(.name)"'
+ * | jq -r '.checks[] | "\(.implementation) | \(.passed) | \(.name)"'
  * }</pre>
  */
 @RestController
-@RequestMapping("/verify")
+@RequestMapping("/q1/verify")
 public class VerificationController {
 
 	private final VerificationService verificationService;
 
 	/**
-	 * Crea el controlador con su servicio.
-	 *
-	 * @param verificationService el servicio que ejecuta la suite
-	 */
+  * Crea el controlador con su servicio.
+  *
+  * @param verificationService el servicio que ejecuta la suite
+  */
 	public VerificationController(VerificationService verificationService) {
 		this.verificationService = verificationService;
 	}
 
 	/**
-	 * Ejecuta la suite y devuelve el informe.
+  * Ejecuta la suite y devuelve el informe.
   *
-	 * @return el informe de la suite de verificación
-	 */
+  * @return el informe de la suite de verificación
+  */
 	@GetMapping
 	public ResponseEntity<VerificationReport> verify() {
 		return ResponseEntity.ok(verificationService.run());
 	}
 
 	/**
-	 * Igual que {@link #verify()}, pero como POST para quien prefiera no lanzar peticiones de
-	 * lectura desde el navegador.
-	 *
-	 * @return el informe de la suite de verificación
-	 */
+  * Igual que {@link #verify()}, pero como POST para quien prefiera no lanzar peticiones de
+  * lectura desde el navegador.
+  *
+  * @return el informe de la suite de verificación
+  */
 	@PostMapping
 	public ResponseEntity<VerificationReport> run() {
 		return ResponseEntity.ok(verificationService.run());

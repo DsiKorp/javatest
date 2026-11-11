@@ -37,7 +37,7 @@ class MyListControllerTest {
 	private MockMvc mockMvc;
 
 	private String createList(String type, String body) throws Exception {
-		String response = mockMvc.perform(post("/lists/" + type).contentType(MediaType.APPLICATION_JSON)
+		String response = mockMvc.perform(post("/q1/lists/" + type).contentType(MediaType.APPLICATION_JSON)
 			.content(body))
 			.andExpect(status().isCreated())
 			.andReturn()
@@ -49,7 +49,7 @@ class MyListControllerTest {
 	@Test
 	@DisplayName("crea una lista y devuelve su estado")
 	void createsList() throws Exception {
-		mockMvc.perform(post("/lists/arraylist").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/q1/lists/arraylist").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"values\":[1,\"a\",null]}"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.type").value("ARRAY_LIST"))
@@ -62,10 +62,10 @@ class MyListControllerTest {
 	@Test
 	@DisplayName("acepta los dos tipos de lista, con y sin guiones")
 	void acceptsBothTypes() throws Exception {
-		mockMvc.perform(post("/lists/arraylist").contentType(MediaType.APPLICATION_JSON).content("{}"))
+		mockMvc.perform(post("/q1/lists/arraylist").contentType(MediaType.APPLICATION_JSON).content("{}"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.type").value("ARRAY_LIST"));
-		mockMvc.perform(post("/lists/linked-list").contentType(MediaType.APPLICATION_JSON).content("{}"))
+		mockMvc.perform(post("/q1/lists/linked-list").contentType(MediaType.APPLICATION_JSON).content("{}"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.type").value("LINKED_LIST"));
 	}
@@ -75,28 +75,28 @@ class MyListControllerTest {
 	void mutatesElements() throws Exception {
 		String id = createList("arraylist", "{\"values\":[\"a\",\"b\",\"c\"]}");
 
-		mockMvc.perform(post("/lists/arraylist/" + id + "/elements").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/q1/lists/arraylist/" + id + "/elements").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"value\":\"d\"}"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.size").value(4))
 			.andExpect(jsonPath("$.values[3]").value("d"));
 
-		mockMvc.perform(post("/lists/arraylist/" + id + "/elements/0")
+		mockMvc.perform(post("/q1/lists/arraylist/" + id + "/elements/0")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("{\"value\":\"z\"}"))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.values[0]").value("z"));
 
-		mockMvc.perform(put("/lists/arraylist/" + id + "/elements/1").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put("/q1/lists/arraylist/" + id + "/elements/1").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"value\":\"y\"}"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.values[1]").value("y"));
 
-		mockMvc.perform(get("/lists/arraylist/" + id + "/elements/1"))
+		mockMvc.perform(get("/q1/lists/arraylist/" + id + "/elements/1"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.value").value("y"));
 
-		mockMvc.perform(delete("/lists/arraylist/" + id + "/elements/0"))
+		mockMvc.perform(delete("/q1/lists/arraylist/" + id + "/elements/0"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.size").value(4))
 			.andExpect(jsonPath("$.values[0]").value("y"));
@@ -107,13 +107,13 @@ class MyListControllerTest {
 	void searchesElements() throws Exception {
 		String id = createList("linkedlist", "{\"values\":[\"a\",\"b\",\"a\"]}");
 
-		mockMvc.perform(post("/lists/linkedlist/" + id + "/index-of").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/q1/lists/linkedlist/" + id + "/index-of").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"value\":\"a\"}"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.index").value(0))
 			.andExpect(jsonPath("$.found").value(true));
 
-		mockMvc.perform(post("/lists/linkedlist/" + id + "/contains").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/q1/lists/linkedlist/" + id + "/contains").contentType(MediaType.APPLICATION_JSON)
 			.content("{\"value\":\"zzz\"}"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.contains").value(false));
@@ -124,11 +124,11 @@ class MyListControllerTest {
 	void listsRegisteredLists() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(get("/lists"))
+		mockMvc.perform(get("/q1/lists"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[*].id", org.hamcrest.Matchers.hasItem(id)));
 
-		mockMvc.perform(get("/lists").param("type", "array_list"))
+		mockMvc.perform(get("/q1/lists").param("type", "array_list"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[*].id", org.hamcrest.Matchers.hasItem(id)));
 	}
@@ -138,17 +138,17 @@ class MyListControllerTest {
 	void deletesList() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(delete("/lists/arraylist/" + id)).andExpect(status().isNoContent());
-		mockMvc.perform(get("/lists/arraylist/" + id)).andExpect(status().isNotFound());
+		mockMvc.perform(delete("/q1/lists/arraylist/" + id)).andExpect(status().isNoContent());
+		mockMvc.perform(get("/q1/lists/arraylist/" + id)).andExpect(status().isNotFound());
 	}
 
 	@Test
 	@DisplayName("responde 404 si la lista no existe")
 	void returnsNotFound() throws Exception {
-		mockMvc.perform(get("/lists/arraylist/no-existe"))
+		mockMvc.perform(get("/q1/lists/arraylist/no-existe"))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.status").value(404))
-			.andExpect(jsonPath("$.path").value("/lists/arraylist/no-existe"));
+			.andExpect(jsonPath("$.path").value("/q1/lists/arraylist/no-existe"));
 	}
 
 	@Test
@@ -156,13 +156,13 @@ class MyListControllerTest {
 	void returnsNotFoundForWrongType() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(get("/lists/linkedlist/" + id)).andExpect(status().isNotFound());
+		mockMvc.perform(get("/q1/lists/linkedlist/" + id)).andExpect(status().isNotFound());
 	}
 
 	@Test
 	@DisplayName("responde 400 si el tipo de lista no existe")
 	void returnsBadRequestForUnknownType() throws Exception {
-		mockMvc.perform(post("/lists/vector").contentType(MediaType.APPLICATION_JSON).content("{}"))
+		mockMvc.perform(post("/q1/lists/vector").contentType(MediaType.APPLICATION_JSON).content("{}"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("vector")));
 	}
@@ -172,7 +172,7 @@ class MyListControllerTest {
 	void returnsBadRequestForNegativeIndex() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(get("/lists/arraylist/" + id + "/elements/-1"))
+		mockMvc.perform(get("/q1/lists/arraylist/" + id + "/elements/-1"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.status").value(400));
 	}
@@ -182,7 +182,7 @@ class MyListControllerTest {
 	void returnsBadRequestForOutOfRangeIndex() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(get("/lists/arraylist/" + id + "/elements/99"))
+		mockMvc.perform(get("/q1/lists/arraylist/" + id + "/elements/99"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.status").value(400));
 	}
@@ -192,7 +192,7 @@ class MyListControllerTest {
 	void returnsBadRequestForMalformedBody() throws Exception {
 		String id = createList("arraylist", "{\"values\":[1]}");
 
-		mockMvc.perform(post("/lists/arraylist/" + id + "/elements").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/q1/lists/arraylist/" + id + "/elements").contentType(MediaType.APPLICATION_JSON)
 			.content("{roto"))
 			.andExpect(status().isBadRequest());
 	}
@@ -200,7 +200,7 @@ class MyListControllerTest {
 	@Test
 	@DisplayName("el id de la lista se genera en el servidor")
 	void generatesServerSideId() throws Exception {
-		String response = mockMvc.perform(post("/lists/arraylist").contentType(MediaType.APPLICATION_JSON)
+		String response = mockMvc.perform(post("/q1/lists/arraylist").contentType(MediaType.APPLICATION_JSON)
 			.content("{}"))
 			.andReturn()
 			.getResponse()

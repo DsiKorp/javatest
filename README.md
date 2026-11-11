@@ -6,6 +6,10 @@ propio endpoint de autoverificación y su propia documentación.
 
 - **Java 25** · **Spring Boot 4.1.2** · **Maven**
 
+> **Guía en HTML:** [`docs/guia.html`](docs/guia.html) — el índice completo de los dos módulos,
+> con el orden de lectura y las decisiones de diseño.
+> [`docs/q01-anatomia.html`](docs/q01-anatomia.html) — profundización del punto 1.
+
 ---
 
 ## Puntos implementados
@@ -13,7 +17,7 @@ propio endpoint de autoverificación y su propia documentación.
 | # | Pregunta | Paquete | Verificación | Documentación |
 |---|---|---|---|---|
 | 01 | ArrayList vs LinkedList | `q01.arraylistvslinkedlist` | `POST /api/q1/verify` | [docs/q01-arraylist-vs-linkedlist.md](docs/q01-arraylist-vs-linkedlist.md) |
-| 02 | *pendiente* | `q02.<tema>` | `POST /api/q2/verify` | — |
+| 02 | REST frente a SOAP (WSDL y OpenAPI) | `q02.restvssoap` | `POST /api/q2/verify` | [docs/q02-rest-vs-soap.md](docs/q02-rest-vs-soap.md) |
 
 ---
 
@@ -137,6 +141,21 @@ src/test/java/com/dsikorp/epam/javatest/qNN/<tema>/...
 **Código compartido:** si dos preguntas necesitan lo mismo, se extrae a un paquete `common/` en la
 raíz. Hasta que ocurra, no se crea: es preferible duplicar un poco antes que acoplar preguntas
 que no tienen por qué conocerse.
+
+Ya ha ocurrido dos veces, y lo que hay en `common/` es exactamente el marco de verificación
+(framework de checks, informe y `ErrorResponse`), que es genérico y no pertenece a ninguna
+pregunta:
+
+```
+common/
+├── dto/ErrorResponse.java
+└── verification/          Check · CheckAction · CheckResult · VerificationReport ·
+                            VerificationRunner · Verifications
+```
+
+**Y un aviso que costó sangre:** Spring deriva el **nombre del bean** del nombre de la clase, así
+que dos preguntas no pueden tener clases con el mismo nombre simple. Por eso la pregunta 2 llama
+a su servicio `ContractVerificationService` y no `VerificationService`.
 
 ---
 

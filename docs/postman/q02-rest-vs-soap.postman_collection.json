@@ -1,0 +1,212 @@
+{
+  "info": {
+    "name": "Q02 · REST frente a SOAP",
+    "description": "Colección de Postman para el punto 2 del examen.\n\nLa misma operación de negocio expuesta en REST y en SOAP, con su OpenAPI y su WSDL.\n\nEl context-path de la aplicación es /api, así que todas las URLs cuelgan de él.",
+    "_postman_id": "c3a7f1e4-5b62-4d18-9a03-q2b4c5d6e7f8",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Suite de verificación (10 comprobaciones)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/q2/verify",
+        "description": "Comprueba los dos contratos, los dos stubs y que REST y SOAP devuelven lo mismo."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const informe = pm.response.json();",
+              "console.log(`Comprobaciones: ${informe.total} | superadas: ${informe.passed} | fallidas: ${informe.failed}`);",
+              "pm.test('todas las comprobaciones se superan', function () {",
+              "    pm.expect(informe.failed).to.eql(0);",
+              "    pm.expect(informe.passed).to.eql(informe.total);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 · REST · calcular presupuesto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/q2/rest/quotes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"SKU-1\",\n  \"quantity\": 3,\n  \"customerId\": \"VIP-9\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "La operación en REST. Devuelve unitPrice 19.99 y total 53.97 (19.99 x 3 con 10 % de descuento VIP)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('el total es 53.97', function () {",
+              "    pm.expect(pm.response.json().total).to.eql(53.97);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · SOAP · calcular presupuesto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/xml; charset=utf-8"
+          },
+          {
+            "key": "SOAPAction",
+            "value": "http://example.com/quote/quote"
+          }
+        ],
+        "url": "{{baseUrl}}/q2/soap/quote-service",
+        "description": "La MISMA operación en SOAP. El sobre va en el cuerpo y el Content-Type es text/xml.",
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <soapenv:Body>\n    <ns2:quote xmlns:ns2=\"http://example.com/quote\">\n      <ns2:sku>SKU-1</ns2:sku>\n      <ns2:quantity>3</ns2:quantity>\n      <ns2:customerId>VIP-9</ns2:customerId>\n    </ns2:quote>\n  </soapenv:Body>\n</soapenv:Envelope>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responde 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('el total es 53.97', function () {",
+              "    pm.expect(pm.response.text()).to.contain('<ns2:total>53.97</ns2:total>');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Contrato REST (OpenAPI 3.1)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/q2/openapi.yaml",
+        "description": "El contrato del servicio REST, el equivalente del WSDL."
+      }
+    },
+    {
+      "name": "04 · Contrato SOAP (WSDL 1.1)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/q2/soap/quote-service.wsdl",
+        "description": "El contrato del servicio SOAP. Es lo que leería un wsimport para generar el stub."
+      }
+    },
+    {
+      "name": "05 · REST · producto desconocido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/q2/rest/quotes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"NOPE\",\n  \"quantity\": 3,\n  \"customerId\": \"C-1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "El error de negocio en REST: 400 con el mensaje. La misma causa, otro dialecto."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responde 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('explica el motivo', function () {",
+              "    pm.expect(pm.response.json().message).to.contain('unknown sku');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · SOAP · producto desconocido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "text/xml; charset=utf-8"
+          }
+        ],
+        "url": "{{baseUrl}}/q2/soap/quote-service",
+        "description": "El mismo error en SOAP: un SOAP Fault con el mismo mensaje. Ojo: un fault se devuelve con HTTP 500, que es lo que dicta la convención SOAP.",
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <soapenv:Body>\n    <ns2:quote xmlns:ns2=\"http://example.com/quote\">\n      <ns2:sku>NOPE</ns2:sku>\n      <ns2:quantity>3</ns2:quantity>\n      <ns2:customerId>C-1</ns2:customerId>\n    </ns2:quote>\n  </soapenv:Body>\n</soapenv:Envelope>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('el sobre trae un SOAP Fault', function () {",
+              "    pm.expect(pm.response.text()).to.contain('SOAP-ENV:Fault');",
+              "    pm.expect(pm.response.text()).to.contain('unknown sku');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

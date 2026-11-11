@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Contrato SOAP del servicio de presupuestos.
+
+  Este fichero es el equivalente del OpenAPI en el mundo SOAP, y está escrito a mano a
+  propósito: es exactamente lo que tiene un servicio SOAP heredado, donde el WSDL está
+  congelado y el servidor se implementa contra él en lugar de generarse desde el código.
+
+  Spring WS lo publica en el "?wsdl" del servlet (mediante SimpleWsdl11Definition, que sirve
+  el fichero tal cual) y es lo que leería un "wsimport" para generar el stub del cliente.
+
+  Los nombres de los elementos son el contrato: coinciden con los @XmlRootElement de las
+  clases JAXB del servidor y con el @PayloadRoot del endpoint.
+-->
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:tns="http://example.com/quote"
+                  targetNamespace="http://example.com/quote"
+                  name="QuoteService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://example.com/quote" elementFormDefault="qualified">
+
+      <xsd:element name="quote">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="sku" type="xsd:string"/>
+            <xsd:element name="quantity" type="xsd:int"/>
+            <xsd:element name="customerId" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="quoteResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="sku" type="xsd:string"/>
+            <xsd:element name="quantity" type="xsd:int"/>
+            <xsd:element name="unitPrice" type="xsd:decimal"/>
+            <xsd:element name="total" type="xsd:decimal"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <wsdl:message name="quoteRequest">
+    <wsdl:part name="parameters" element="tns:quote"/>
+  </wsdl:message>
+
+  <wsdl:message name="quoteResponse">
+    <wsdl:part name="parameters" element="tns:quoteResponse"/>
+  </wsdl:message>
+
+  <wsdl:portType name="QuotePort">
+    <wsdl:operation name="quote">
+      <wsdl:documentation>Calcula el presupuesto de un pedido.</wsdl:documentation>
+      <wsdl:input message="tns:quoteRequest"/>
+      <wsdl:output message="tns:quoteResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="QuoteBinding" type="tns:QuotePort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="quote">
+      <soap:operation soapAction="http://example.com/quote/quote" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="QuoteService">
+    <wsdl:port name="QuotePort" binding="tns:QuoteBinding">
+      <soap:address location="/api/q2/soap/quote-service"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
